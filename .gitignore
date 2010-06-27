@@ -1,0 +1,9 @@
+/tmp/cache/models/*
+/tmp/cache/views/*
+/tmp/cache/persistent/*
+/tmp/sessions/*
+/tmp/logs/*
+.settings
+.directory
+.project
+.buildpath
