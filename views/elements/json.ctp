@@ -1,2 +1,1 @@
-<?php
-echo json_encode($this->viewVars);
+<?php echo json_encode($this->viewVars);

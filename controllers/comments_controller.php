@@ -4,6 +4,8 @@ class CommentsController extends AppController {
 	public $name = 'Comments';
 	
 	public $helpers = array('Number');
+	
+	public $components = array('NaiveBayes');
 
 	public function index()
 	{
@@ -77,6 +79,30 @@ class CommentsController extends AppController {
 	public function statistics()
 	{
 		$this->set('stats', $this->Comment->getStats());
+		
+		$comments = $this->Comment->find('all');
+		$entries = array();
+		
+		foreach($comments as $comment)
+		{
+			$entries[] = array(
+				'class' => $comment['Comment']['spam'],
+				'content' => $comment['Comment']['content']
+			);
+		}
+		
+		$this->NaiveBayes->modelGenerate($entries);
+		
+		$comment = $this->Comment->find('first');
+		
+		$entries[] = array(
+			'class' => $comment['Comment']['spam'],
+			'content' => $comment['Comment']['content']
+		);
+		
+		echo $this->NaiveBayes->classify($entries);
+		
+		$this->layout = 'ajax';
 	}
 	
 	public function testFilter($id)
@@ -90,9 +116,7 @@ class CommentsController extends AppController {
 		$socket = new HttpSocket();
 		$url = 'http://spamfilter.dottibook/classifiers/isSpam.json';
 		
-		$class = $socket->get($url, array('message' => $comment['Comment']['content']));
-		
-		pr($class);
+		$class = $socket->post($url, array('data' => json_encode(array('message' => $comment['Comment']['content']))));
 	}
 	
 	/**
@@ -104,5 +128,10 @@ class CommentsController extends AppController {
 	public function exportArff()
 	{
 		$comments = $this->Comment->find('all');
+	}
+	
+	public function exportBorgeltFormat()
+	{
+		
 	}
 }

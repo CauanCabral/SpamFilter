@@ -1,32 +1,72 @@
 <?php
+App::import('Sanitize');
+
+/**
+ * Classe/serviço RESTful para classificação de mensagens
+ * utilizando algoritimo Naive Bayes.
+ * 
+ * @author Cauan Cabral
+ *
+ */
 class ClassifiersController extends AppController {
 	
 	public $name = 'Classifiers';
 	public $uses = array();
+	
+	/**
+	 * Componente que faz a ligação do controller
+	 * com um classificador NaiveBayes externo.
+	 * 
+	 * @var NaiveBayes
+	 */
 	public $components = array('NaiveBayes');
 	
 	/**
-	 * RESTful action to classify a message
-	 * using Navie Bayes algorithm
+	 * Ação para classificação de uma mensaagem (GET)
+	 * e atualização do classificador (PUT), usando
+	 * o algoritimo Naive Bayes.
+	 *  
+	 * Caso receba o header GET com uma mensagem, retorna
+	 * a classe para esta mensagem.
+	 * Caso rerceba o header PUT com uma mensagem e uma classe,
+	 * então salva registro para futura atualização do classificador.
 	 * 
-	 * @return json formatted string with response
+	 * @param message Mensagem que deve ser classificada
+	 * @param class Classe da mensagem - opicional (deve ser usado somente
+	 * com o header PUT)
+	 * 
+	 * @return classe da mensagem ou true em caso de atualização do filtro
+	 * bem sucedidade.
 	 */
-	public function isSpam($message = null)
-	{	
-		if(empty($message))
+	public function isSpam()
+	{
+		/*
+		 * Tratamento de ação GET (view)
+		 */
+		if($this->RequestHandler->isGet())
 		{
-			$response['errors'][] = __('Você precisa passar uma mensagem como parâmetro', 1);
-		}
-		else
-		{
-			$entry = json_decode($message);
-			
-			if(!isset($entry['message']))
+			if(empty($this->data))
 			{
-				trigger_error(__('Parâmetro de classificação está mal-formatado.', 1), E_USER_ERROR);
+				$response['errors'][] = __('Você precisa passar uma mensagem como parâmetro', 1);
 			}
+			else
+			{
+				$entry = json_decode($this->data);
+				
+				if(!isset($entry->message))
+				{
+					trigger_error(__('Parâmetro de classificação está mal-formatado.', 1), E_USER_ERROR);
+				}
+				
+				$response['class'] = $this->NaiveBayes->classify($entry->message);
+			}
+		}
+		/*
+		 * Tratamento de ação PUT (update)
+		 */
+		else if($this->RequestHandler->isPut())
+		{
 			
-			$response['class'] = $this->NaiveBayes->classify($entry['message']);
 		}
 		
 		$this->set(compact('response'));
@@ -42,7 +82,7 @@ class ClassifiersController extends AppController {
 	 * @return void or json formatted error message
 	 */
 	public function update($message = null, $class = 1)
-	{	
+	{
 		if(empty($message))
 		{
 			$response['errors'][] = __('Você precisa passar ao menos um parâmetro ao método', 1);

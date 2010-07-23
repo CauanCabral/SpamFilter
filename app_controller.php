@@ -33,7 +33,7 @@
 class AppController extends Controller {
 	
 	public $components = array('Session', 'RequestHandler');
-	public $helpers = array('Html', 'Session');
+	public $helpers = array('Html', 'Form', 'Session');
 	
 	public function beforeRender()
 	{
