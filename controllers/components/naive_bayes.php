@@ -25,9 +25,8 @@ class NaiveBayesComponent extends Object {
 			'binaryPath' => '/usr/bin/',
 			'domain' => 'dom -a %s %s',
 			'inductor' => 'bci  %s %s %s',
-			'classifier' => 'bcx ',
+			'classifier' => 'bcx -cClassified -pConfidence',
 			'output' => array(
-				'filename' => 'tmp',
 				'types' => 'both', // valores válidos: tab, arff e both (ambos)
 				'missingSymbol' => '?',
 				'classAttribute' => 'spam',
@@ -119,25 +118,67 @@ class NaiveBayesComponent extends Object {
 	 */
 	public function classify($entries)
 	{
-		$inputFile = $this->_entriesFormatTab($entries);
+		// caso não haja um modelo carregado, tenta carrega-lo
+		if(empty($this->_model['entries']))
+		{
+			// se não for possível carregar, aborta o classificador
+			if( $this->__loadModel() === false)
+			{
+				trigger_error(__('Model not exist or can\'t be read.'), E_USER_ERROR);
+				return false;
+			}
+		}
 		
+		$fileContent = $this->_entriesFormatTab($entries);
 		
+		// salva arquivo '.tab' com as entradas (instancias) que serão classificadas
+		if( !$this->_writeFile('samples.tab', $modelContent) )
+		{
+			trigger_error(__('Samples file can\'t be saved. Check system permissions'), E_USER_ERROR);
+		}
+		
+		// executa o classificador
+		exec(
+			$this->_settings['binaryPath'] .
+			sprintf(
+				$this->_settings['classifier'],
+				$this->_model['name'] . '.nbc',
+				'samples.tab', 
+				'tmp.cls'), 
+			$exec_out,
+			$status
+		);
+		
+		if($status !== 0)
+		{
+			trigger_error(__('Can\'t classify samples.'), E_USER_ERROR);
+			return false;
+		}
 	}
 	
 	/**
-	 * Método responsável por carregar o modelo de filtro
-	 * NaiveBayes para uso futuro (classificação)
+	 * Método responsável por carregar dados do modelo
+	 * para classificação
+	 * 
+	 * @return bool $succcess
 	 */
 	protected function __loadModel()
 	{
+		// não é necessário ainda
 		
+		return true;
 	}
 	
 	/**
+	 * Gera um string formatada (estilo arquivo '.tab') para um conjunto de valores
+	 * de entrada.
 	 * 
+	 * @param array $entries Array com as instâncias
+	 * @param bool $includeHeader Flag de controle para incluir cabeçalho dos tokens
+	 * na string de retorno
 	 * 
-	 * @param unknown_type $entry
-	 * @param unknown_type $includeHeader
+	 * @return string $output String contendo os tokens identificados dentro
+	 * do array de entradas com suas repectivas frequências formatado como um arquivo '.tab'
 	 */
 	protected function _entriesFormatTab($entries, $overrideAttributes = false)
 	{
@@ -211,10 +252,13 @@ class NaiveBayesComponent extends Object {
 	}
 	
 	/**
+	 * Separa a string de entrada em Tokens e conta a frequência
+	 * de cada uma delas dentro da sentença inicial.
 	 * 
+	 * @param string $entry Conteúdo de entrada
 	 * 
-	 * Enter description here ...
-	 * @param unknown_type $entry
+	 * @return array $out Array tendo como índices os tokens idenficados e como valor
+	 * associado a frequência de cada um.
 	 */
 	protected function _identifyAttributes($entry)
 	{
@@ -258,10 +302,13 @@ class NaiveBayesComponent extends Object {
 	}
 	
 	/**
+	 * Transforma a string de entrada em lower-case e substitui caracteres especiais
+	 * (incluindo acentos) em correspondentes ASCII
 	 * 
+	 * @param string $s String de entrada
 	 * 
-	 * Enter description here ...
-	 * @param unknown_type $s
+	 * @return string $out String de entrada com caracteres especiais substituidos por
+	 * correspondentes ASCII
 	 */
 	private function _unifyString($s)
 	{
@@ -272,11 +319,13 @@ class NaiveBayesComponent extends Object {
 	}
 	
 	/**
+	 * Escreve um arquivo no sistema e torna-o
+	 * disponível a todos os usuários (permissão 777)
 	 * 
+	 * @param string $name Nome do arquivo
+	 * @param string $data Conteúdo do arquivo
 	 * 
-	 * Enter description here ...
-	 * @param unknown_type $name
-	 * @param unknown_type $data
+	 * @return bool $success
 	 */
 	private function _writeFile($name, $data)
 	{
