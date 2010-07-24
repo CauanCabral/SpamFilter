@@ -86,7 +86,7 @@ class CommentsController extends AppController {
 		foreach($comments as $comment)
 		{
 			$entries[] = array(
-				'class' => $comment['Comment']['spam'],
+				'class' => $comment['Comment']['spam'] ? 'spam' : 'not_spam',
 				'content' => $comment['Comment']['content']
 			);
 		}
@@ -96,11 +96,11 @@ class CommentsController extends AppController {
 		$comment = $this->Comment->find('first');
 		
 		$entries[] = array(
-			'class' => $comment['Comment']['spam'],
+			'class' => $comment['Comment']['spam'] ? 'spam' : 'not_spam',
 			'content' => $comment['Comment']['content']
 		);
 		
-		echo $this->NaiveBayes->classify($entries);
+		//echo $this->NaiveBayes->classify($entries);
 		
 		$this->layout = 'ajax';
 	}

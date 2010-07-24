@@ -1,10 +1,6 @@
 <?php
 class NaiveBayesComponent extends Object {
 	
-	protected $_modelName = 'model';
-	
-	protected $_modelPath = './';
-	
 	/**
 	 * Atributo que guarda informações sobre o modelo
 	 * atual gerado pelo algorítmo NaiveBayes
@@ -15,30 +11,27 @@ class NaiveBayesComponent extends Object {
 	 * @var array
 	 */
 	protected $_model = array(
+		'name' => 'spams',
 		'atributes' => array(),
 		'entries' => array()
 	);
-	
-	/**
-	 * Expressão regular que define os separadores dos tokens
-	 * válidos que formam um atributo
-	 * 
-	 * @var string
-	 */
-	protected $_tokenSeparator = '/\s|\[|\]|<|>|\?|;|\"|\'|\=|\/|:|\(|\)|!|&/';
-	
-	protected $_missingSymbol = '?';
-	
-	protected $_classAttribute = 'spam';
 	
 	protected $_settings = array();
 	
 	public function __construct($settings = array())
 	{
 		$default_settings = array(
-			'binary_path' => '/usr/bin/',
-			'inductor' => 'bci',
-			'classifier' => 'bcx'
+			'tokenSeparator' => '/\s|\[|\]|<|>|\?|;|\"|\'|\=|\/|:|\(|\)|!|&/',
+			'binaryPath' => '/usr/bin/',
+			'domain' => 'dom -a %s %s',
+			'inductor' => 'bci  %s %s %s',
+			'classifier' => 'bcx ',
+			'output' => array(
+				'filename' => 'tmp',
+				'types' => 'both', // valores válidos: tab, arff e both (ambos)
+				'missingSymbol' => '?',
+				'classAttribute' => 'spam',
+			)
 		);
 		
 		$this->_settings = array_merge($default_settings, $settings);
@@ -61,37 +54,77 @@ class NaiveBayesComponent extends Object {
 			trigger_error(__('Training set must be an array'), E_USER_ERROR);
 		}
 		
-		$inputFile = $this->_entriesFormat($trainingSet, true);
+		// formata as instancias para salvar como arquivo '.tab'
+		$modelContent = $this->_entriesFormatTab($trainingSet, true);
 		
-		$file = new SplFileObject("comments.tab", "w");
-		$written = $file->fwrite($inputFile);
+		// salva arquivo '.tab' com as entradas (instancias)
+		if( !$this->_writeFile($this->_model['name'] . '.tab', $modelContent) )
+		{
+			trigger_error(__('Model file can\'t be saved. Check system permissions'), E_USER_ERROR);
+		}
 		
-		echo ($written !== null) ? "Arquivo escrito" : "Falha ao escrever arquivo"; 
+		// array auxiliar que armazenará a saída do último binário executado via 'exec'
+		$exec_out = array();
+		
+		// cria o domínio dos dados
+		exec(
+			$this->_settings['binaryPath'] .
+			sprintf(
+				$this->_settings['domain'],
+				$this->_model['name'] . '.tab',
+				$this->_model['name'] . '.dom'), 
+			$exec_out,
+			$status
+		);
+		
+		if($status !== 0)
+		{
+			trigger_error(__('Can\'t generate domain.'), E_USER_ERROR);
+			return false;
+		}
+		
+		unset($exec_out); // limpa array de controle
+		
+		// induz o classificador (modelo)
+		exec(
+			$this->_settings['binaryPath'] .
+			sprintf(
+				$this->_settings['inductor'],
+				$this->_model['name'] . '.dom',
+				$this->_model['name'] . '.tab', 
+				$this->_model['name'] . '.nbc'), 
+			$exec_out,
+			$status
+		);
+		
+		if($status !== 0)
+		{
+			trigger_error(__('Can\'t generate classifier model.'), E_USER_ERROR);
+			return false;
+		}
+		
+		return true;
 	}
 	
-	public function modelUpdate($entry, $class)
-	{
-		$_entry = $this->_entryFormat($entry);
-	}
+	/**
+	 * @TODO implementar método para atualização do classificador
+	 * 
+	 */
+	public function modelUpdate() {}
 
 	/**
-	 * 
 	 * Classifica um conjunto de entradas
 	 * 
 	 * @param array $entries
 	 */
 	public function classify($entries)
 	{
-		$inputFile = $this->_entriesFormat($entries);
+		$inputFile = $this->_entriesFormatTab($entries);
 		
-		$file = new SplFileObject("comment.tab", "w");
-		$written = $file->fwrite($inputFile);
 		
-		echo ($written !== null) ? "Arquivo escrito" : "Falha ao escrever arquivo";
 	}
 	
 	/**
-	 * 
 	 * Método responsável por carregar o modelo de filtro
 	 * NaiveBayes para uso futuro (classificação)
 	 */
@@ -106,7 +139,7 @@ class NaiveBayesComponent extends Object {
 	 * @param unknown_type $entry
 	 * @param unknown_type $includeHeader
 	 */
-	protected function _entriesFormat($entries, $overrideAttributes = false)
+	protected function _entriesFormatTab($entries, $overrideAttributes = false)
 	{
 		$header = array();
 		$lines = array(); 
@@ -154,7 +187,7 @@ class NaiveBayesComponent extends Object {
 			$header = $this->_model['attributes'];
 		
 		// inicia formatação final definindo linha de cabeçalho
-		$output = implode(" ", array_keys($header)) . " {$this->_classAttribute}\n";
+		$output = implode(" ", array_keys($header)) . " {$this->_settings['output']['classAttribute']}\n";
 		
 		// adiciona linhas restantes
 		foreach($lines as $line)
@@ -165,11 +198,11 @@ class NaiveBayesComponent extends Object {
 					$output .= $line['attributes'][$key] . str_repeat(' ', $len - mb_strlen($line['attributes'][$key]) + 1);
 					
 				else
-					$output .= $this->_missingSymbol . str_repeat(' ', $len - strlen($this->_missingSymbol) + 1);
+					$output .= $this->_settings['output']['missingSymbol'] . str_repeat(' ', $len - strlen($this->_settings['output']['missingSymbol']) + 1);
 			}
 			
 			// concatena coluna referente a classe
-			$output .= $line['class'] . str_repeat(' ', strlen($this->_classAttribute) - strlen($line['class']) + 1);
+			$output .= $line['class'];
 			
 			$output .= "\n";
 		}
@@ -177,9 +210,15 @@ class NaiveBayesComponent extends Object {
 		return $output;
 	}
 	
+	/**
+	 * 
+	 * 
+	 * Enter description here ...
+	 * @param unknown_type $entry
+	 */
 	protected function _identifyAttributes($entry)
 	{
-		$tokens = preg_split($this->_tokenSeparator, $entry, null, PREG_SPLIT_NO_EMPTY);
+		$tokens = preg_split($this->_settings['tokenSeparator'], $entry, null, PREG_SPLIT_NO_EMPTY);
 		
 		$out = array(
 			'links_count' => 0
@@ -218,11 +257,33 @@ class NaiveBayesComponent extends Object {
 		return $out;
 	}
 	
+	/**
+	 * 
+	 * 
+	 * Enter description here ...
+	 * @param unknown_type $s
+	 */
 	private function _unifyString($s)
 	{
 		$out = mb_strtolower($s, 'UTF-8');
 		$out = Inflector::slug($out);
 		
 		return $out;
+	}
+	
+	/**
+	 * 
+	 * 
+	 * Enter description here ...
+	 * @param unknown_type $name
+	 * @param unknown_type $data
+	 */
+	private function _writeFile($name, $data)
+	{
+		$file = new SplFileObject($name, "w");
+		$written = $file->fwrite($data);
+		chmod($name, 0777);
+		
+		return ($written !== null);
 	}
 }
