@@ -30,6 +30,7 @@ class NaiveBayesComponent extends Object {
 				'types' => 'both', // valores válidos: tab, arff e both (ambos)
 				'missingSymbol' => '?',
 				'classAttribute' => 'spam',
+				'classAttributeValues' => array('spam', 'not_spam')
 			)
 		);
 		
@@ -58,6 +59,15 @@ class NaiveBayesComponent extends Object {
 		
 		// salva arquivo '.tab' com as entradas (instancias)
 		if( !$this->_writeFile($this->_model['name'] . '.tab', $modelContent) )
+		{
+			trigger_error(__('Model file can\'t be saved. Check system permissions'), E_USER_ERROR);
+		}
+		
+		// formata as instancias para salvar como arquivo '.arff'
+		$modelContent = $this->_entriesFormatArff($trainingSet);
+		
+		// salva arquivo '.tab' com as entradas (instancias)
+		if( !$this->_writeFile($this->_model['name'] . '.arff', $modelContent) )
 		{
 			trigger_error(__('Model file can\'t be saved. Check system permissions'), E_USER_ERROR);
 		}
@@ -196,7 +206,7 @@ class NaiveBayesComponent extends Object {
 			);
 		}
 		
-		$this->_mode['entries'] = $lines;
+		$this->_model['entries'] = $lines;
 		
 		if($overrideAttributes)
 		{
@@ -240,6 +250,94 @@ class NaiveBayesComponent extends Object {
 					
 				else
 					$output .= $this->_settings['output']['missingSymbol'] . str_repeat(' ', $len - strlen($this->_settings['output']['missingSymbol']) + 1);
+			}
+			
+			// concatena coluna referente a classe
+			$output .= $line['class'];
+			
+			$output .= "\n";
+		}
+		
+		return $output;
+	}
+	
+	/**
+	 * Gera um string formatada (estilo arquivo '.arff') para um conjunto de valores
+	 * de entrada.
+	 * 
+	 * @param array $entries Array com as instâncias
+	 * @param bool $includeHeader Flag de controle para incluir cabeçalho dos tokens
+	 * na string de retorno
+	 * 
+	 * @return string $output String contendo os tokens identificados dentro
+	 * do array de entradas com suas repectivas frequências formatado como um arquivo '.arff'
+	 */
+	protected function _entriesFormatArff($entries, $overrideEntries = false, $overrideAttributes = false)
+	{
+		$header = array();
+		$lines = array();
+		
+		// caso já tenha sido identificado os atributos para as entradas
+		if(!empty($this->_model['entries']) && $overrideEntries === false)
+		{
+			$lines = $this->_model['entries'];
+		}
+		else if($overrideEntries === true)
+		{
+			// identifica os atributos para cada entrada
+			foreach($entries as $entry)
+			{
+				$lines[] = array(
+					'class' => $entry['class'],
+					'attributes' => $this->_identifyAttributes($entry['content'])
+				);
+			}
+		}
+		
+		// identifica o tipo de cada coluna (atributo)
+		foreach($lines as $line)
+		{
+			foreach($line['attributes'] as $key => $col)
+			{
+				// não verifica o tipo do atributo em diferentes instancias
+				if(isset($header[$key]))
+					continue;
+				
+				// ignora/remove atributos pouco significativos
+				if($col < 3)
+					continue;
+				
+				// verifica o tipo do atributo
+				if(is_numeric($col))
+					$header[$key] = 'numeric';
+				else if(is_string($col))
+					$header[$key] = 'string';
+			}
+		}
+		
+		// inicia conteúdo do arquivo de saída
+		$output = '@RELATION ' . $this->_model['name'] . "\n\n";
+		
+		foreach($header as $attr => $type)
+		{
+			$output .= '@ATTRIBUTE ' . $attr . ' ' . $type . "\n";
+		}
+		
+		$output .= '@ATTRIBUTE ' . $this->_settings['output']['classAttribute'] . ' {' . implode(',', $this->_settings['output']['classAttributeValues']) . '}';
+		$output .= "\n\n@DATA\n";
+		
+		// adiciona linhas restantes
+		foreach($lines as $line)
+		{
+			foreach($header as $key => $len)
+			{
+				if(isset($line['attributes'][$key]))
+					$output .= $line['attributes'][$key];
+					
+				else
+					$output .= $this->_settings['output']['missingSymbol'];
+					
+				$output .= ',';
 			}
 			
 			// concatena coluna referente a classe
