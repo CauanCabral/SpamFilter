@@ -79,30 +79,6 @@ class CommentsController extends AppController {
 	public function statistics()
 	{
 		$this->set('stats', $this->Comment->getStats());
-		
-		$comments = $this->Comment->find('all');
-		$entries = array();
-		
-		foreach($comments as $comment)
-		{
-			$entries[] = array(
-				'class' => $comment['Comment']['spam'] ? 'spam' : 'not_spam',
-				'content' => $comment['Comment']['content']
-			);
-		}
-		
-		$this->NaiveBayes->modelGenerate($entries);
-		
-		$comment = $this->Comment->find('first');
-		
-		$entries[] = array(
-			'class' => $comment['Comment']['spam'] ? 'spam' : 'not_spam',
-			'content' => $comment['Comment']['content']
-		);
-		
-		//echo $this->NaiveBayes->classify($entries);
-		
-		$this->layout = 'ajax';
 	}
 	
 	public function testFilter($id)
@@ -120,18 +96,35 @@ class CommentsController extends AppController {
 	}
 	
 	/**
-	 * Gera um arquivo Arff com os dados de comentários
-	 * armazenados no banco
+	 * Gera arquivos Arff e Tab para uso com WEKA  e implementações
+	 * do Borgelt do NaiveBayes
 	 * 
 	 * @return void
 	 */
-	public function exportArff()
-	{
+	public function export()
+	{	
 		$comments = $this->Comment->find('all');
-	}
-	
-	public function exportBorgeltFormat()
-	{
+		$entries = array();
 		
+		foreach($comments as $comment)
+		{
+			$entries[] = array(
+				'class' => $comment['Comment']['spam'] ? 'spam' : 'not_spam',
+				'content' => $comment['Comment']['content']
+			);
+		}
+		
+		$this->NaiveBayes->modelGenerate($entries);
+		
+		/*
+		$comment = $this->Comment->find('first');
+		
+		$entries[] = array(
+			'class' => $comment['Comment']['spam'] ? 'spam' : 'not_spam',
+			'content' => $comment['Comment']['content']
+		);
+		
+		echo $this->NaiveBayes->classify($entries);
+		*/
 	}
 }

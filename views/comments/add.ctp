@@ -15,6 +15,6 @@
 	<ul>
 		<li><?php echo $this->Html->link(__('List Comments', true), array('action' => 'index'));?></li>
 		<li><?php echo $this->Html->link(__('Statistics', true), array('action' => 'statistics')); ?></li>
-		<li><?php echo $this->Html->link(__('Export Arff', true), array('action' => 'exportArff')); ?></li>
+		<li><?php echo $this->Html->link(__('Export', true), array('action' => 'export')); ?></li>
 	</ul>
 </div>

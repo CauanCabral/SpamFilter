@@ -37,7 +37,14 @@ class AppController extends Controller {
 	
 	public function beforeRender()
 	{
-		if($this->RequestHandler->isAjax() || $this->params['url']['ext'] === 'json')
+		if($this->name == 'CakeError')
+		{
+			$this->__setErrorLayout();
+			
+			return;
+		}
+		
+		if($this->RequestHandler->isAjax() || $this->params['prefix'] === 'api')
 		{
 			$this->autoRender = false;
 			
@@ -45,5 +52,11 @@ class AppController extends Controller {
 			
 			$this->layout = 'blank';
 		}
+	}
+	
+	protected function __setErrorLayout()
+	{
+		$this->layout = 'error';
+		$this->autoRender = false;
 	}
 }

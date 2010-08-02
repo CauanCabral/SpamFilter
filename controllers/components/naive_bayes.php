@@ -54,22 +54,28 @@ class NaiveBayesComponent extends Object {
 			trigger_error(__('Training set must be an array'), E_USER_ERROR);
 		}
 		
-		// formata as instancias para salvar como arquivo '.tab'
-		$modelContent = $this->_entriesFormatTab($trainingSet, true);
-		
-		// salva arquivo '.tab' com as entradas (instancias)
-		if( !$this->_writeFile($this->_model['name'] . '.tab', $modelContent) )
+		if( $this->_settings['output']['types'] == 'both' || $this->_settings['output']['types'] == 'tab' )
 		{
-			trigger_error(__('Model file can\'t be saved. Check system permissions'), E_USER_ERROR);
+			// formata as instancias para salvar como arquivo '.tab'
+			$modelContent = $this->_entriesFormatTab($trainingSet, true);
+			
+			// salva arquivo '.tab' com as entradas (instancias)
+			if( !$this->_writeFile($this->_model['name'] . '.tab', $modelContent) )
+			{
+				trigger_error(__('Model file can\'t be saved. Check system permissions'), E_USER_ERROR);
+			}
 		}
 		
-		// formata as instancias para salvar como arquivo '.arff'
-		$modelContent = $this->_entriesFormatArff($trainingSet);
-		
-		// salva arquivo '.tab' com as entradas (instancias)
-		if( !$this->_writeFile($this->_model['name'] . '.arff', $modelContent) )
+		if( $this->_settings['output']['types'] == 'both' || $this->_settings['output']['types'] == 'arff')
 		{
-			trigger_error(__('Model file can\'t be saved. Check system permissions'), E_USER_ERROR);
+			// formata as instancias para salvar como arquivo '.arff'
+			$modelContent = $this->_entriesFormatArff($trainingSet);
+			
+			// salva arquivo '.arff' com as entradas (instancias)
+			if( !$this->_writeFile($this->_model['name'] . '.arff', $modelContent) )
+			{
+				trigger_error(__('Model file can\'t be saved. Check system permissions'), E_USER_ERROR);
+			}
 		}
 		
 		// array auxiliar que armazenará a saída do último binário executado via 'exec'
