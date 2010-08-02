@@ -25,7 +25,7 @@ class NaiveBayesComponent extends Object {
 			'binaryPath' => '/usr/bin/',
 			'domain' => 'dom -a %s %s',
 			'inductor' => 'bci  %s %s %s',
-			'classifier' => 'bcx -cClassified -pConfidence',
+			'classifier' => 'bcx -cClassified -pConfidence -x -w %s %s %s',
 			'output' => array(
 				'types' => 'both', // valores válidos: tab, arff e both (ambos)
 				'missingSymbol' => '?',
@@ -148,10 +148,12 @@ class NaiveBayesComponent extends Object {
 		$fileContent = $this->_entriesFormatTab($entries);
 		
 		// salva arquivo '.tab' com as entradas (instancias) que serão classificadas
-		if( !$this->_writeFile('samples.tab', $modelContent) )
+		if( !$this->_writeFile('samples.tab', $fileContent) )
 		{
 			trigger_error(__('Samples file can\'t be saved. Check system permissions'), E_USER_ERROR);
 		}
+		
+		$exec_out = array();
 		
 		// executa o classificador
 		exec(
@@ -159,8 +161,8 @@ class NaiveBayesComponent extends Object {
 			sprintf(
 				$this->_settings['classifier'],
 				$this->_model['name'] . '.nbc',
-				'samples.tab', 
-				'tmp.cls'), 
+				'samples.tab',
+				'output.tmp'), 
 			$exec_out,
 			$status
 		);
@@ -170,6 +172,16 @@ class NaiveBayesComponent extends Object {
 			trigger_error(__('Can\'t classify samples.'), E_USER_ERROR);
 			return false;
 		}
+		
+		$tmp = file_get_contents('output.tmp');
+		
+		$classified = explode(' ', $tmp);
+		$l = count($classified) - 1;
+		
+		return array(
+			'class' => $classified[$l - 3],
+			'confidence' => $classified[$l - 2]
+		);
 	}
 	
 	/**

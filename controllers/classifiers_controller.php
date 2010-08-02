@@ -45,6 +45,13 @@ class ClassifiersController extends AppController {
 		 */
 		if($this->RequestHandler->isGet())
 		{
+			
+		}
+		/*
+		 * Tratamento de ação PUT (update)
+		 */
+		else if($this->RequestHandler->isPut())
+		{
 			if(empty($this->data))
 			{
 				$response['errors'][] = __('Você precisa passar uma mensagem como parâmetro', 1);
@@ -58,18 +65,14 @@ class ClassifiersController extends AppController {
 					trigger_error(__('Parâmetro de classificação está mal-formatado.', 1), E_USER_ERROR);
 				}
 				
-				$response['class'] = $this->NaiveBayes->classify($entry->message);
+				$response['class'] = $this->NaiveBayes->classify(array('class' => '?', 'content' => $entry->message));
 			}
-		}
-		/*
-		 * Tratamento de ação PUT (update)
-		 */
-		else if($this->RequestHandler->isPut())
-		{
-			
 		}
 		
 		$this->set(compact('response'));
+		
+		$this->layoutPath = '/';
+		$this->layout = 'blank';
 		
 		$this->render('default');
 	}

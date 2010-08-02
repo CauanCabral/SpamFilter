@@ -44,8 +44,12 @@ class AppController extends Controller {
 			return;
 		}
 		
-		if($this->RequestHandler->isAjax() || $this->params['prefix'] === 'api')
+		if($this->RequestHandler->isAjax() || (isset($this->params['prefix']) && $this->params['prefix'] === 'api'))
 		{
+			//Configure::write('debug', 0);
+			
+			$this->disableCache();
+			
 			$this->autoRender = false;
 			
 			$this->layoutPath = '/';

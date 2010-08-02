@@ -87,12 +87,14 @@ class CommentsController extends AppController {
 		
 		App::import('Core', 'HttpSocket');
 		
-		$comment = $this->Comment->read(null, $id);
+		$comment = $this->Comment->read(null, 2);
 		
 		$socket = new HttpSocket();
 		$url = 'http://spamfilter.dottibook/classifiers/isSpam.json';
 		
-		$class = $socket->post($url, array('data' => json_encode(array('message' => $comment['Comment']['content']))));
+		$class = $socket->put($url, array('data' => json_encode(array('message' => $comment['Comment']['content']))));
+		
+		pr($class);
 	}
 	
 	/**
@@ -115,16 +117,5 @@ class CommentsController extends AppController {
 		}
 		
 		$this->NaiveBayes->modelGenerate($entries);
-		
-		/*
-		$comment = $this->Comment->find('first');
-		
-		$entries[] = array(
-			'class' => $comment['Comment']['spam'] ? 'spam' : 'not_spam',
-			'content' => $comment['Comment']['content']
-		);
-		
-		echo $this->NaiveBayes->classify($entries);
-		*/
 	}
 }
