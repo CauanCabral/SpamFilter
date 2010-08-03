@@ -12,7 +12,7 @@ class NaiveBayesComponent extends Object {
 	 */
 	protected $_model = array(
 		'name' => 'spams',
-		'atributes' => array(),
+		'attributes' => array(),
 		'entries' => array()
 	);
 	
@@ -192,9 +192,32 @@ class NaiveBayesComponent extends Object {
 	 */
 	protected function __loadModel()
 	{
-		// não é necessário ainda
+		$tmp = file_get_contents($this->_model['name'] . '.tab');
+		$tmp = explode("\n", $tmp);  
 		
-		return true;
+		$aux = explode(' ', $tmp[0]);
+		
+		unset($tmp);
+		
+		$header = array();
+		
+		// identifica o tamanho de cada coluna (atributo) para formatação final
+		foreach($aux as $attr)
+		{
+			// verifica o tamanho da string com valor da coluna
+			if(!isset($header[$attr]))
+			{
+				$header[$attr] = mb_strlen($attr);
+			}
+		}
+		
+		// remove a classe da classificação, pois isso é adicionado automaticamente
+		if(isset($header[$this->_settings['output']['classAttribute']]))
+			unset($header[$this->_settings['output']['classAttribute']]);
+		
+		$this->_model['attributes'] = $header;
+		
+		return !empty($this->_model['attributes']);
 	}
 	
 	/**
@@ -224,10 +247,10 @@ class NaiveBayesComponent extends Object {
 			);
 		}
 		
-		$this->_model['entries'] = $lines;
-		
 		if($overrideAttributes)
 		{
+			$this->_model['entries'] = $lines;
+			
 			// identifica o tamanho de cada coluna (atributo) para formatação final
 			foreach($lines as $line)
 			{

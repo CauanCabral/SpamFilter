@@ -22,9 +22,8 @@ class ClassifiersController extends AppController {
 	public $components = array('NaiveBayes');
 	
 	/**
-	 * Ação para classificação de uma mensaagem (GET)
-	 * e atualização do classificador (PUT), usando
-	 * o algoritimo Naive Bayes.
+	 * Ação para classificação de uma mensaagem (POST)
+	 * usando o algoritimo Naive Bayes.
 	 *  
 	 * Caso receba o header GET com uma mensagem, retorna
 	 * a classe para esta mensagem.
@@ -32,8 +31,6 @@ class ClassifiersController extends AppController {
 	 * então salva registro para futura atualização do classificador.
 	 * 
 	 * @param message Mensagem que deve ser classificada
-	 * @param class Classe da mensagem - opicional (deve ser usado somente
-	 * com o header PUT)
 	 * 
 	 * @return classe da mensagem ou true em caso de atualização do filtro
 	 * bem sucedidade.
@@ -41,16 +38,9 @@ class ClassifiersController extends AppController {
 	public function isSpam()
 	{
 		/*
-		 * Tratamento de ação GET (view)
-		 */
-		if($this->RequestHandler->isGet())
-		{
-			
-		}
-		/*
 		 * Tratamento de ação PUT (update)
 		 */
-		else if($this->RequestHandler->isPut())
+		if($this->RequestHandler->isPost())
 		{
 			if(empty($this->data))
 			{
@@ -65,7 +55,7 @@ class ClassifiersController extends AppController {
 					trigger_error(__('Parâmetro de classificação está mal-formatado.', 1), E_USER_ERROR);
 				}
 				
-				$response['class'] = $this->NaiveBayes->classify(array('class' => '?', 'content' => $entry->message));
+				$response = $this->NaiveBayes->classify(array(array('class' => '?', 'content' => $entry->message)));
 			}
 		}
 		

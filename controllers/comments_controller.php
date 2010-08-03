@@ -92,9 +92,9 @@ class CommentsController extends AppController {
 		$socket = new HttpSocket();
 		$url = 'http://spamfilter.dottibook/classifiers/isSpam.json';
 		
-		$class = $socket->put($url, array('data' => json_encode(array('message' => $comment['Comment']['content']))));
+		$response = $socket->post($url, array('data' => json_encode(array('message' => $comment['Comment']['content']))));
 		
-		pr($class);
+		pr(json_decode($response));
 	}
 	
 	/**
