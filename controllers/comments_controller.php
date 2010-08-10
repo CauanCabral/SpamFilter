@@ -87,7 +87,7 @@ class CommentsController extends AppController {
 		
 		App::import('Core', 'HttpSocket');
 		
-		$comment = $this->Comment->read(null, 2);
+		$comment = $this->Comment->read(null, $id);
 		
 		$socket = new HttpSocket();
 		$url = 'http://spamfilter.dottibook/classifiers/isSpam.json';
