@@ -11,7 +11,7 @@ App::import('Sanitize');
 class ClassifiersController extends AppController {
 	
 	public $name = 'Classifiers';
-	public $uses = array();
+	//public $uses = array();
 	
 	/**
 	 * Componente que faz a ligação do controller
@@ -88,5 +88,25 @@ class ClassifiersController extends AppController {
 		$this->set(compact('response'));
 		
 		$this->render('default');
+	}
+
+	public function testPa()
+	{
+		$this->loadModel('Comment');
+
+		$comments = $this->Comment->find('all');
+		$entries = array();
+
+		foreach($comments as $comment)
+		{
+			$entries[] = array(
+				'class' => $comment['Comment']['spam'] ? 'spam' : 'not_spam',
+				'content' => $comment['Comment']['content']
+			);
+		}
+
+		$this->Classifier->buildModel('Spam', $entries);
+
+		$this->autoRender = false;
 	}
 }

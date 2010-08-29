@@ -51,7 +51,7 @@ class NaiveBayesComponent extends Object {
 	{	
 		if(!is_array($trainingSet))
 		{
-			trigger_error(__('Training set must be an array'), E_USER_ERROR);
+			trigger_error(__('Training set must be an array', true), E_USER_ERROR);
 		}
 		
 		if( $this->_settings['output']['types'] == 'both' || $this->_settings['output']['types'] == 'tab' )
@@ -62,7 +62,7 @@ class NaiveBayesComponent extends Object {
 			// salva arquivo '.tab' com as entradas (instancias)
 			if( !$this->_writeFile($this->_model['name'] . '.tab', $modelContent) )
 			{
-				trigger_error(__('Model file can\'t be saved. Check system permissions'), E_USER_ERROR);
+				trigger_error(__('Model file can\'t be saved. Check system permissions', true), E_USER_ERROR);
 			}
 		}
 		
@@ -74,7 +74,7 @@ class NaiveBayesComponent extends Object {
 			// salva arquivo '.arff' com as entradas (instancias)
 			if( !$this->_writeFile($this->_model['name'] . '.arff', $modelContent) )
 			{
-				trigger_error(__('Model file can\'t be saved. Check system permissions'), E_USER_ERROR);
+				trigger_error(__('Model file can\'t be saved. Check system permissions', true), E_USER_ERROR);
 			}
 		}
 		
@@ -94,7 +94,7 @@ class NaiveBayesComponent extends Object {
 		
 		if($status !== 0)
 		{
-			trigger_error(__('Can\'t generate domain.'), E_USER_ERROR);
+			trigger_error(__('Can\'t generate domain.', true), E_USER_ERROR);
 			return false;
 		}
 		
@@ -114,7 +114,7 @@ class NaiveBayesComponent extends Object {
 		
 		if($status !== 0)
 		{
-			trigger_error(__('Can\'t generate classifier model.'), E_USER_ERROR);
+			trigger_error(__('Can\'t generate classifier model.', true), E_USER_ERROR);
 			return false;
 		}
 		
@@ -140,7 +140,7 @@ class NaiveBayesComponent extends Object {
 			// se não for possível carregar, aborta o classificador
 			if( $this->__loadModel() === false)
 			{
-				trigger_error(__('Model not exist or can\'t be read.'), E_USER_ERROR);
+				trigger_error(__('Model not exist or can\'t be read.', true), E_USER_ERROR);
 				return false;
 			}
 		}
@@ -150,7 +150,7 @@ class NaiveBayesComponent extends Object {
 		// salva arquivo '.tab' com as entradas (instancias) que serão classificadas
 		if( !$this->_writeFile('samples.tab', $fileContent) )
 		{
-			trigger_error(__('Samples file can\'t be saved. Check system permissions'), E_USER_ERROR);
+			trigger_error(__('Samples file can\'t be saved. Check system permissions', true), E_USER_ERROR);
 		}
 		
 		$exec_out = array();
@@ -169,7 +169,7 @@ class NaiveBayesComponent extends Object {
 		
 		if($status !== 0)
 		{
-			trigger_error(__('Can\'t classify samples.'), E_USER_ERROR);
+			trigger_error(__('Can\'t classify samples.', true), E_USER_ERROR);
 			return false;
 		}
 		
@@ -235,8 +235,6 @@ class NaiveBayesComponent extends Object {
 	{
 		$header = array();
 		$lines = array(); 
-		
-		$first = true;
 		
 		// identifica os atributos para cada entrada
 		foreach($entries as $entry)
