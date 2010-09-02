@@ -5,8 +5,6 @@ class Classifier extends AppModel
 {
 	public $name = 'Classifier';
 
-	public $useTable = false;
-
 	protected $_tokenSeparator = '/\s|\[|\]|<|>|\?|;|\"|\'|\=|\/|:|\(|\)|!|&/';
 
 	protected $_model = null;
@@ -70,6 +68,9 @@ class Classifier extends AppModel
 		}
 
 		$this->_model->modelGenerate($trainingSet);
+
+		// guarda modelo de forma persistente (no bd)
+		return $this->save(array('model' => serialize($this->_model)));
 	}
 
 	/**
@@ -78,18 +79,16 @@ class Classifier extends AppModel
 	 *
 	 * @return bool $succcess
 	 */
-	public function loadModel($name = '')
+	public function loadModel($id = null)
 	{
-		if(empty($name))
+		if($id == null)
 		{
 			trigger_error(__('Classifier model can not be loaded', true), E_USER_ERROR);
 
 			return false;
 		}
 
-		$this->contain();
-
-		$_model = $this->find('first', array('conditions' => array('Classifier.name' => $name)));
+		$_model = $this->find('first', array('conditions' => array('Classifier.id' => $id)));
 
 		$this->_model = unserialize($_model[$this->name]['model']);
 
@@ -101,6 +100,87 @@ class Classifier extends AppModel
 		}
 
 		return $this->_model;
+	}
+
+	/**
+	 *
+	 * @param <type> $entries
+	 */
+	public function classify($entries)
+	{
+		$toClassify = array();
+
+		// identifica os atributos para cada entrada
+		foreach($entries as $t => $entry)
+		{
+			$attributes = $this->__identifyAttributes($entry['content']);
+			$toClassify[$t] = $attributes;
+
+			foreach($attributes as $attr => $freq)
+			{
+				// verifica se o atributo faz parte dos atributos observados (parte do modelo)
+				if(!isset($this->_model->attributes[$attr]))
+				{
+					// caso não faça, remove-o da lista
+					unset($toClassify[$t][$attr]);
+				}
+			}
+		}
+
+		// adiciona no vetor de entradas, os atributos inexistentes no exemplo
+		foreach($his->_model->attributes as $attr)
+		{
+			foreach($toClassify as $k => $entry)
+			{
+				if(!isset($entry[$attr]))
+				{
+					$toClassify[$k][$attr] = 0;
+				}
+			}
+		}
+
+		return $this->_model->classify($toClassify);
+	}
+
+	/**
+	 *
+	 * @param <type> $content
+	 * @param <type> $class
+	 * @param <type> $options
+	 */
+	public function update($content, $class, $options = array())
+	{
+		$entry = $this->__identifyAttributes($content);
+
+		foreach($entry as $attr => $freq)
+		{
+			// verifica se o atributo faz parte dos atributos observados (parte do modelo)
+			if(!isset($this->_model->attributes[$attr]))
+			{
+				// caso não faça, remove-o da lista
+				unset($entry[$attr]);
+			}
+		}
+
+		// adiciona no vetor de entradas, os atributos inexistentes no exemplo
+		foreach($his->_model->attributes as $attr)
+		{
+			if(!isset($entry[$attr]))
+			{
+				$entry[$attr] = 0;
+			}
+		}
+
+		if(isset($options['t']))
+		{
+			$t = $options['t'];
+		}
+		else
+		{
+			$t = null;
+		}
+
+		$this->_model->update($entry, $class, $t);
 	}
 
 	/**
@@ -158,6 +238,29 @@ class Classifier extends AppModel
 		$out = Inflector::slug($out);
 
 		return $out;
+	}
+
+	public function printModel()
+	{
+		$this->_model->printModel(true);
+	}
+
+	public function modelReport()
+	{
+		$report = array();
+
+		$report['number_of_instances'] = $this->_model->statistics['total'];
+		$report['number_of_attributes'] = count($this->_model->attributes);
+		$report['number_of_asserts'] = $this->_model->statistics['asserts'];
+
+		$report['assertion_ratio'] = ($this->_model->statistics['asserts'] / $this->_model->statistics['total']) * 100;
+
+		return $report;
+	}
+
+	public function printStats()
+	{
+		$this->_model->printStats();
 	}
 }
 ?>

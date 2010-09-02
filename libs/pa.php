@@ -31,8 +31,11 @@ class Pa extends BaseClassifier
 		// para cada instância
 		foreach($this->entries as $t => $x)
 		{
+			// recupera, do exemplo, a classe correta
+			$correctClass = $x['class'] == 'spam' ? 1 : -1;
+
 			// atualiza classificador
-			$this->modelUpdate($t, $x);
+			$this->modelUpdate($x['attributes'], $correctClass, $t);
 		}
 
 		return true;
@@ -43,36 +46,67 @@ class Pa extends BaseClassifier
 	 * @param int $t Rodada do classificador
 	 * @param array $x Exemplo
 	 */
-	public function modelUpdate($t, $x)
+	public function modelUpdate($x, $correctClass = null, $t = null)
 	{
+		// se $t não é passado
+		if($t == null)
+		{
+			// assume que foi a última rodada salva
+			$t = count($this->w) - 1;
+		}
+		// caso contrário, remove todos os índices maiores que $t e 'recomeça' o classificador do ponto $t
+		else
+		{
+			for($i = count($this->w) - 1; $i > $t; --$i)
+			{
+				// remove posição $i do classificador
+				unset($this->w[$i]);
+			}
+		}
+
 		// calcula produto interno dos pesos atuais no classificador e do novo exemplo
-		$dot = $this->__innerProduct($this->w[$t], $x['attributes']);
+		$dot = $this->__innerProduct($this->w[$t], $x);
 
 		$dotNorm = $this->__norm($dot);
 
-		$norm = $this->__norm($x['attributes']);
+		$norm = $this->__norm($x);
 
-		// atribui uma classe para o novo exemplo
+		// prediz uma classe para o novo exemplo
 		$y = $this->__sign( $dotNorm );
 
-		// recupera, do exemplo, a classe correta
-		$correctClass = $x['class'] == 'spam' ? 1 : -1;
+		// se não for passada a classe correta, considera a classe predita como correta
+		if($correctClass == null)
+		{
+			$correctClass = $y;
+		}
+		// caso contrário guarda estatística de acerto
+		else
+		{
+			if($y == $correctClass)
+			{
+				$this->statistics['asserts']++;
+			}
+
+			$this->statistics['total']++;
+		}
 
 		// cálcula e guarda a margem de precisão da predição
-		$l = $this->__sufferLoss($y, $dotNorm);
+		$l = $this->__sufferLoss($correctClass, $dotNorm);
 
 		// cálcula o parâmetro τ utilizado na atualização do classificador
 		$tau = $this->__tau($l, $norm);
 
 		// atualiza o classificador para o próximo exemplo
-		foreach($x['attributes'] as $k => $v)
+		foreach($x as $k => $v)
 		{
 			$aux = $l*$tau*$v;
 
 			$this->w[$t+1][$k] = $this->w[$t][$k] + $aux;
 		}
 
-		pr(array('correta' => $correctClass, 'predito' => $y, 'suffer_loss' => $l));
+		//pr(array('predito' => $y, 'correta' => $correctClass, 'loss' => $l));
+
+		return array('class' => $y, 'p' => $l);
 	}
 
 	/**
@@ -82,7 +116,19 @@ class Pa extends BaseClassifier
 	 */
 	public function classify($entries)
 	{
-		
+		$classes = array();
+
+		// para cada instância
+		foreach($this->entries as $t => $x)
+		{
+			// recupera, do exemplo, a classe correta
+			$correctClass = $x['class'] == 'spam' ? 1 : -1;
+
+			// atualiza classificador
+			$classes[$t] = $this->modelUpdate($x['attributes']);
+		}
+
+		return $classes;
 	}
 
 	/**
@@ -100,7 +146,7 @@ class Pa extends BaseClassifier
 			return 1;
 
 		if($value == 0)
-			return 0;
+			return 1;
 
 		if($value < 0)
 			return -1;
@@ -207,5 +253,23 @@ class Pa extends BaseClassifier
 		}
 
 		return $t;
+	}
+
+	/**
+	 * Método auxiliar
+	 */
+	public function printModel($all = false)
+	{
+		if($all)
+		{
+			foreach($this->w as $x)
+			{
+				echo implode(';', $x), "\n";
+			}
+		}
+		else
+		{
+			echo implode(';', $this->w[count($this->w) - 1]);
+		}
 	}
 }

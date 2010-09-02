@@ -11,7 +11,6 @@ App::import('Sanitize');
 class ClassifiersController extends AppController {
 	
 	public $name = 'Classifiers';
-	//public $uses = array();
 	
 	/**
 	 * Componente que faz a ligação do controller
@@ -90,11 +89,21 @@ class ClassifiersController extends AppController {
 		$this->render('default');
 	}
 
-	public function testPa()
+	public function tests($type = 'pa', $action = 'default', $entries = 'all')
 	{
+		$type = Inflector::camelize($type);
+		
 		$this->loadModel('Comment');
 
-		$comments = $this->Comment->find('all');
+		if(is_numeric($entries))
+		{
+			$comments = $this->Comment->find('all', array('conditios' => array('Comment.id' => $entries)));
+		}
+		else
+		{
+			$comments = $this->Comment->find('all');
+		}
+
 		$entries = array();
 
 		foreach($comments as $comment)
@@ -105,8 +114,29 @@ class ClassifiersController extends AppController {
 			);
 		}
 
-		$this->Classifier->buildModel('Spam', $entries);
+		switch($action)
+		{
+			case 'build':
+				$this->Classifier->buildModel('Spam', $entries, $type);
+				$this->set('stats', $this->Classifier->modelReport());
+				
+				break;
+			case 'classify':
+				$id = ($type == 'Pa') ? 1 : 2;
 
-		$this->autoRender = false;
+				$this->Classifier->loadModel($id);
+
+				$this->set('classified', $this->Classifier->classify($entries));
+				break;
+			case 'info':
+				$id = ($type == 'Pa') ? 1 : 2;
+				$this->Classifier->loadModel($id);
+
+				$this->set('stats', $this->Classifier->modelReport());
+				break;
+			default:
+				$this->Session->setFlash('Clique em uma das opções do menu ao lado');
+				break;
+		}
 	}
 }

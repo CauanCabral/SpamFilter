@@ -9,6 +9,11 @@ class BaseClassifier
 
 	public $classField = 'class';
 
+	public $statistics = array(
+		'asserts' => 0,
+		'total' => 0
+	);
+
 	public function  __construct($name)
 	{
 		$this->name = $name;
@@ -96,6 +101,11 @@ class BaseClassifier
 		}
 
 		return $balance;
+	}
+
+	public function printStats()
+	{
+		echo 'Total de instâncias: ', $this->statistics['total'], "\n Número de acertos: ", $this->statistics['asserts'];
 	}
 
 }
