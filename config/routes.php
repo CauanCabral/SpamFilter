@@ -2,7 +2,7 @@
 /**
  * Cria rota padrão
  */
-Router::connect('/', array('controller' => 'comments', 'action' => 'index'));
+Router::connect('/', array('controller' => 'classifiers', 'action' => 'tests'));
 
 /**
  * Conecta páginas estáticas (sem model)

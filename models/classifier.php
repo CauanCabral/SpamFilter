@@ -24,7 +24,7 @@ class Classifier extends AppModel
 		}
 		else if($type == 'NaiveBayes')
 		{
-			$this->_model = new NaiveBayes($name);
+			$this->_model = new NaiveBayes($name, 6);
 		}
 		else
 		{
@@ -119,7 +119,7 @@ class Classifier extends AppModel
 			foreach($attributes as $attr => $freq)
 			{
 				// verifica se o atributo faz parte dos atributos observados (parte do modelo)
-				if(!isset($this->_model->attributes[$attr]))
+				if(!in_array($attr, $this->_model->attributes))
 				{
 					// caso não faça, remove-o da lista
 					unset($toClassify[$t][$attr]);
@@ -128,7 +128,7 @@ class Classifier extends AppModel
 		}
 
 		// adiciona no vetor de entradas, os atributos inexistentes no exemplo
-		foreach($his->_model->attributes as $attr)
+		foreach($this->_model->attributes as $attr)
 		{
 			foreach($toClassify as $k => $entry)
 			{

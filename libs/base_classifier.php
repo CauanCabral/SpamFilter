@@ -9,14 +9,21 @@ class BaseClassifier
 
 	public $classField = 'class';
 
+	public $classes = array(
+		'spam' => 1,
+		'not_spam' => -1
+	);
+
 	public $statistics = array(
 		'asserts' => 0,
 		'total' => 0
 	);
 
-	public function  __construct($name)
+	public function __construct($name, $precision = 4)
 	{
 		$this->name = $name;
+
+		bcscale($precision);
 	}
 
 	/**
@@ -30,6 +37,11 @@ class BaseClassifier
 		{
 			trigger_error(__('Training set must be an array', true), E_USER_ERROR);
 		}
+
+		$this->attributes = $trainingSet['attributes'];
+		$this->entries = $trainingSet['entries'];
+
+		$this->statistics['total'] = count($this->entries);
 
 		return false;
 	}

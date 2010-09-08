@@ -216,10 +216,10 @@ dt {
 	font-weight: bold;
 	padding-left: 4px;
 	vertical-align: top;
-	width: 10em;
+	width: 20em;
 }
 dd {
-	margin: -2em 0 0 10em;
+	margin: -2em 0 0 20em;
 	vertical-align: top;
 }
 

@@ -1,6 +1,8 @@
 <?php
 class NaiveBayes extends BaseClassifier
 {
+	protected $probabilities;
+
 	/**
 	 * Gera um model para o classificador
 	 *
@@ -8,14 +10,44 @@ class NaiveBayes extends BaseClassifier
 	 */
 	public function modelGenerate($trainingSet)
 	{
-		if(!is_array($trainingSet))
+		parent::modelGenerate($trainingSet);
+
+		$this->probabilities = array_fill_keys(array_keys($this->classes), array_fill_keys($this->attributes, 0));
+
+		$classFreq = array_fill_keys(array_keys($this->classes), 0);
+
+		$pr = array();
+
+		// para cada instância
+		foreach($this->entries as $t => $x)
 		{
-			trigger_error(__('Training set must be an array', true), E_USER_ERROR);
+			// recupera, do exemplo, a classe correta
+			$correctClass = $this->classes[$x['class']];
+
+			// conta a ocorrencia de instâncias com a classe dentro do domínio
+			$classFreq[$x['class']]++;
+
+			// cálcula probabilidade de cada atributo
+			foreach($x['attributes'] as $attr => $freq)
+			{
+				if(!isset($pr[$attr][$x['class']]))
+					$pr[$attr][$x['class']] = 0;
+				
+				$pr[$attr][$x['class']] += $freq;
+			}
 		}
 
-		/**
-		 * @TODO implementar a inferencia do modelo baseado no NaiveBayes
-		 */
+		$pr['spam'] = bcdiv($classFreq['spam'], $this->statistics['total']);
+		$pr['not_spam'] = bcdiv($classFreq['not_spam'], $this->statistics['total']);
+
+		foreach($pr as $attr => $freq)
+		{
+			if(array_key_exists($attr, $this->classes))
+				continue;
+			
+			$this->probabilities['spam'][$attr] = bcdiv($freq['spam'], $this->statistics['total']);
+			$this->probabilities['not_spam'][$attr] = bcdiv($freq['not_spam'], $this->statistics['total']);
+		}
 
 		return true;
 	}
@@ -36,24 +68,37 @@ class NaiveBayes extends BaseClassifier
 	 */
 	public function classify($entries)
 	{
+		$classes = array();
 
+		foreach($entries as $t => $entry)
+		{
+			$isSpam = 0;
+			$notSpam = 0;
+			
+			foreach($entry as $attr => $freq)
+			{
+				if($freq > 0)
+				{
+					$isSpam += $this->__p($attr, $freq, 'spam');
+					$notSpam += $this->__p($attr, $freq, 'not_spam');
+				}
+			}
+
+			$classes[$t] = $isSpam > $notSpam ? 'spam' : 'not_spam';
+		}
+
+		return $classes;
 	}
 
 	/**
-	 * Escreve um arquivo no sistema e torna-o
-	 * disponível a todos os usuários (permissão 777)
+	 * Cálcula a probabilidade do exemplo ser classificado como $class
+	 * dado o atributo $attr
 	 *
-	 * @param string $name Nome do arquivo
-	 * @param string $data Conteúdo do arquivo
-	 *
-	 * @return bool $success
+	 * @param array $attr
+	 * @param string $class
 	 */
-	private function __writeFile($name, $data)
+	protected function __p($attr, $freq, $class)
 	{
-		$file = new SplFileObject($name, "w");
-		$written = $file->fwrite($data);
-		chmod($name, 0777);
-
-		return ($written !== null);
+		return bcmul($freq, $this->probabilities[$class][$attr]);
 	}
 }

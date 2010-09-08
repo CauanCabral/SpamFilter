@@ -89,15 +89,45 @@ class ClassifiersController extends AppController {
 		$this->render('default');
 	}
 
-	public function tests($type = 'pa', $action = 'default', $entries = 'all')
+	public function tests($type = 'pa', $action = 'default', $model_id = 1, $comments = 'all')
 	{
 		$type = Inflector::camelize($type);
-		
+
+		switch($action)
+		{
+			case 'build':
+				$entries = $this->__loadComments($comments);
+
+				$this->Classifier->buildModel('Spam', $entries, $type);
+				$this->set('stats', $this->Classifier->modelReport());
+				
+				break;
+			case 'classify':
+				$entries = $this->__loadComments($comments, $comments);
+
+				$this->Classifier->loadModel($model_id);
+				$this->set('classifieds', Set::merge($entries, $this->Classifier->classify($entries)));
+				break;
+			case 'info':
+				$this->Classifier->loadModel($model_id);
+
+				$this->set('stats', $this->Classifier->modelReport());
+				break;
+			default:
+				$this->Session->setFlash('Clique em uma das opções do menu ao lado');
+				break;
+		}
+	}
+
+	private function __loadComments($param = 'all')
+	{
 		$this->loadModel('Comment');
 
-		if(is_numeric($entries))
+		$this->set('ids', $this->Comment->find('list', array('fields' => array('id'))));
+
+		if(is_numeric($param))
 		{
-			$comments = $this->Comment->find('all', array('conditios' => array('Comment.id' => $entries)));
+			$comments = $this->Comment->find('all', array('conditions' => array('Comment.id' => $param)));
 		}
 		else
 		{
@@ -114,29 +144,6 @@ class ClassifiersController extends AppController {
 			);
 		}
 
-		switch($action)
-		{
-			case 'build':
-				$this->Classifier->buildModel('Spam', $entries, $type);
-				$this->set('stats', $this->Classifier->modelReport());
-				
-				break;
-			case 'classify':
-				$id = ($type == 'Pa') ? 1 : 2;
-
-				$this->Classifier->loadModel($id);
-
-				$this->set('classified', $this->Classifier->classify($entries));
-				break;
-			case 'info':
-				$id = ($type == 'Pa') ? 1 : 2;
-				$this->Classifier->loadModel($id);
-
-				$this->set('stats', $this->Classifier->modelReport());
-				break;
-			default:
-				$this->Session->setFlash('Clique em uma das opções do menu ao lado');
-				break;
-		}
+		return $entries;
 	}
 }

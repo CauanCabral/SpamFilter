@@ -17,13 +17,7 @@ class Pa extends BaseClassifier
 	 */
 	public function modelGenerate($trainingSet)
 	{
-		if(!is_array($trainingSet) || empty($trainingSet))
-		{
-			trigger_error(__('Training set must be a not empty array', true), E_USER_ERROR);
-		}
-
-		$this->attributes = $trainingSet['attributes'];
-		$this->entries = $trainingSet['entries'];
+		parent::modelGenerate($trainingSet);
 
 		// inicializa W com zero para todos os atributos, na primeira rodada
 		$this->w[] = array_fill_keys($this->attributes, 0);
@@ -32,7 +26,7 @@ class Pa extends BaseClassifier
 		foreach($this->entries as $t => $x)
 		{
 			// recupera, do exemplo, a classe correta
-			$correctClass = $x['class'] == 'spam' ? 1 : -1;
+			$correctClass = $this->classes[$x['class']];
 
 			// atualiza classificador
 			$this->modelUpdate($x['attributes'], $correctClass, $t);
@@ -86,8 +80,6 @@ class Pa extends BaseClassifier
 			{
 				$this->statistics['asserts']++;
 			}
-
-			$this->statistics['total']++;
 		}
 
 		// cálcula e guarda a margem de precisão da predição
@@ -104,7 +96,10 @@ class Pa extends BaseClassifier
 			$this->w[$t+1][$k] = $this->w[$t][$k] + $aux;
 		}
 
-		//pr(array('predito' => $y, 'correta' => $correctClass, 'loss' => $l));
+		/*
+		 * @FIXME teste meu
+		 */
+		if($l > 0.6) $y = -$y;
 
 		return array('class' => $y, 'p' => $l);
 	}
@@ -119,13 +114,10 @@ class Pa extends BaseClassifier
 		$classes = array();
 
 		// para cada instância
-		foreach($this->entries as $t => $x)
+		foreach($entries as $t => $x)
 		{
-			// recupera, do exemplo, a classe correta
-			$correctClass = $x['class'] == 'spam' ? 1 : -1;
-
 			// atualiza classificador
-			$classes[$t] = $this->modelUpdate($x['attributes']);
+			$classes[$t] = $this->modelUpdate($x);
 		}
 
 		return $classes;
@@ -170,7 +162,7 @@ class Pa extends BaseClassifier
 		}
 
 		$product = array();
-
+		
 		foreach($vetA as $k => $v)
 		{
 			$product[$k] = $v * $vetB[$k];
