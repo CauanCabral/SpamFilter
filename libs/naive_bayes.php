@@ -37,16 +37,16 @@ class NaiveBayes extends BaseClassifier
 			}
 		}
 
-		$pr['spam'] = bcdiv($classFreq['spam'], $this->statistics['total']);
-		$pr['not_spam'] = bcdiv($classFreq['not_spam'], $this->statistics['total']);
+		$pr['spam'] = $classFreq['spam'] / $this->statistics['total'];
+		$pr['not_spam'] = $classFreq['not_spam'] / $this->statistics['total'];
 
 		foreach($pr as $attr => $freq)
 		{
 			if(array_key_exists($attr, $this->classes))
 				continue;
 			
-			$this->probabilities['spam'][$attr] = bcdiv($freq['spam'], $this->statistics['total']);
-			$this->probabilities['not_spam'][$attr] = bcdiv($freq['not_spam'], $this->statistics['total']);
+			$this->probabilities['spam'][$attr] = $freq['spam'] / $this->statistics['total'];
+			$this->probabilities['not_spam'][$attr] = $freq['not_spam'] / $this->statistics['total'];
 		}
 
 		return true;
@@ -84,7 +84,8 @@ class NaiveBayes extends BaseClassifier
 				}
 			}
 
-			$classes[$t] = $isSpam > $notSpam ? 'spam' : 'not_spam';
+			$classes[$t]['class'] = $isSpam > $notSpam ? 1 : -1;
+			$classes[$t]['p'] = $isSpam;
 		}
 
 		return $classes;
@@ -99,6 +100,6 @@ class NaiveBayes extends BaseClassifier
 	 */
 	protected function __p($attr, $freq, $class)
 	{
-		return bcmul($freq, $this->probabilities[$class][$attr]);
+		return log($freq) + log($this->probabilities[$class][$attr]);
 	}
 }

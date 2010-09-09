@@ -107,6 +107,7 @@ class ClassifiersController extends AppController {
 
 				$this->Classifier->loadModel($model_id);
 				$this->set('classifieds', Set::merge($entries, $this->Classifier->classify($entries)));
+				$this->set('ids', $this->Comment->find('list', array('fields' => array('id'))));
 				break;
 			case 'info':
 				$this->Classifier->loadModel($model_id);
@@ -122,8 +123,6 @@ class ClassifiersController extends AppController {
 	private function __loadComments($param = 'all')
 	{
 		$this->loadModel('Comment');
-
-		$this->set('ids', $this->Comment->find('list', array('fields' => array('id'))));
 
 		if(is_numeric($param))
 		{
