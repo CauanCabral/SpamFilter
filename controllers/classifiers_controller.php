@@ -113,6 +113,7 @@ class ClassifiersController extends AppController {
 				$this->Classifier->loadModel($model_id);
 
 				$this->set('stats', $this->Classifier->modelReport());
+				$this->set('classifiers', $this->Classifier->find('list', array('fields' => array('id'))));
 				break;
 			default:
 				$this->Session->setFlash('Clique em uma das opções do menu ao lado');

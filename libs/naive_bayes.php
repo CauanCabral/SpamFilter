@@ -40,6 +40,7 @@ class NaiveBayes extends BaseClassifier
 		$pr['spam'] = $classFreq['spam'] / $this->statistics['total'];
 		$pr['not_spam'] = $classFreq['not_spam'] / $this->statistics['total'];
 
+		// atualiza probabilidade dos atributos
 		foreach($pr as $attr => $freq)
 		{
 			if(array_key_exists($attr, $this->classes))

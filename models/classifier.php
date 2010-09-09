@@ -99,6 +99,8 @@ class Classifier extends AppModel
 			return false;
 		}
 
+		$this->id = $id;
+
 		return $this->_model;
 	}
 
@@ -249,6 +251,8 @@ class Classifier extends AppModel
 	{
 		$report = array();
 
+		$report['type'] = get_class($this->_model);
+		$report['id'] = $this->id;
 		$report['number_of_instances'] = $this->_model->statistics['total'];
 		$report['number_of_attributes'] = count($this->_model->attributes);
 		$report['number_of_asserts'] = $this->_model->statistics['asserts'];

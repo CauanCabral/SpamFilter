@@ -2,7 +2,40 @@
 	<h2><?php __('Testes');?></h2>
 <?php
 if(isset($stats)):
-	pr($stats);
+?>
+	<dl><?php $i = 0; $class = ' class="altrow"';?>
+		<dt<?php if ($i % 2 == 0) echo $class;?>><?php __('Classificador'); ?></dt>
+		<dd<?php if ($i++ % 2 == 0) echo $class;?>>
+			<?php echo $stats['type'] ?>
+			&nbsp;
+		</dd>
+		<dt<?php if ($i % 2 == 0) echo $class;?>><?php __('ID do Classificador'); ?></dt>
+		<dd<?php if ($i++ % 2 == 0) echo $class;?>>
+			<?php echo $stats['id'] ?>
+			&nbsp;
+		</dd>
+		<dt<?php if ($i % 2 == 0) echo $class;?>><?php __('Instâncias'); ?></dt>
+		<dd<?php if ($i++ % 2 == 0) echo $class;?>>
+			<?php echo $stats['number_of_instances']; ?>
+			&nbsp;
+		</dd>
+		<dt<?php if ($i % 2 == 0) echo $class;?>><?php __('Número de Atributos'); ?></dt>
+		<dd<?php if ($i++ % 2 == 0) echo $class;?>>
+			<?php echo $stats['number_of_attributes']; ?>
+			&nbsp;
+		</dd>
+		<dt<?php if ($i % 2 == 0) echo $class;?>><?php __('Número de Acertos'); ?></dt>
+		<dd<?php if ($i++ % 2 == 0) echo $class;?>>
+			<?php echo $stats['number_of_asserts']; ?>
+			&nbsp;
+		</dd>
+		<dt<?php if ($i % 2 == 0) echo $class;?>><?php __('Taxa de Acerto'); ?></dt>
+		<dd<?php if ($i++ % 2 == 0) echo $class;?>>
+			<?php echo $stats['assertion_ratio']; ?>
+			&nbsp;
+		</dd>
+	</dl>
+<?php
 endif;
 
 if(isset($classifieds)):
@@ -30,9 +63,16 @@ if(isset($classifieds)):
 endif;
 
 if(isset($ids)):
-	echo '<br /><br />Testar com mensagem: ';
+	echo '<br /><br /><b>Testar com mensagem: </b>';
 	foreach($ids as $id):
 		echo $this->Html->link($id, array($this->params['pass'][0], $this->params['pass'][1], $this->params['pass'][2], $id)), ' ';
+	endforeach;
+endif;
+
+if(isset($classifiers)):
+	echo '<br /><br /><b>Outros classificadores: </b>';
+	foreach($classifiers as $id):
+		echo $this->Html->link($id, array($this->params['pass'][0], $this->params['pass'][1], $id)), ' ';
 	endforeach;
 endif;
 ?>
