@@ -103,4 +103,9 @@ class NaiveBayes extends BaseClassifier
 	{
 		return log($freq) + log($this->probabilities[$class][$attr]);
 	}
+
+	public function getConfig()
+	{
+		return $this->probabilities;
+	}
 }

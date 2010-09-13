@@ -259,6 +259,15 @@ class Classifier extends AppModel
 
 		$report['assertion_ratio'] = ($this->_model->statistics['asserts'] / $this->_model->statistics['total']) * 100;
 
+		if($report['type'] == 'Pa')
+		{
+			$report['extra']['w'] = $this->_model->getConfig();
+		}
+		else
+		{
+			$report['extra']['probabilities'] = $this->_model->getConfig();
+		}
+
 		return $report;
 	}
 

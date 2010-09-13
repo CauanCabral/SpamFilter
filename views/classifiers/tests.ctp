@@ -1,3 +1,17 @@
+
+<?php
+echo $this->Html->script('jquery');
+?>
+<script type="text/javascript" >
+$(document).ready(function() {
+	$('div.collapse').hide();
+	
+	$('a.collapse').click(function(e) {
+		e.preventDefault();
+		$('div.collapse').toggle();
+	});
+});
+</script>
 <div class="comments index">
 	<h2><?php __('Testes');?></h2>
 <?php
@@ -35,6 +49,9 @@ if(isset($stats)):
 			&nbsp;
 		</dd>
 	</dl>
+	<br />
+	<a class="collapse" href="#">Ver detalhes do classificador</a>
+	<div class="collapse"><?php pr($stats['extra']); ?></div>
 <?php
 endif;
 

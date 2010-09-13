@@ -264,4 +264,19 @@ class Pa extends BaseClassifier
 			echo implode(';', $this->w[count($this->w) - 1]);
 		}
 	}
+
+	/**
+	 *
+	 */
+	public function getConfig()
+	{
+		$formatted = array();
+
+		foreach($this->w as $t => $x)
+		{
+			$formatted[$t] = $x;
+		}
+
+		return $formatted;
+	}
 }
