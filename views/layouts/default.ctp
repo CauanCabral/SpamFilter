@@ -30,6 +30,10 @@
 
 		echo $this->Html->css('cake.generic');
 
+		echo $this->Html->css('jquery-ui');
+		echo $this->Html->script('jquery', array('inline' => true));
+		echo $this->Html->script('jquery-ui', array('inline' => true));
+
 		echo $scripts_for_layout;
 	?>
 </head>
@@ -37,6 +41,7 @@
 	<div id="container">
 		<div id="header">
 		</div>
+		<?php echo $this->element('menu'); ?>
 		<div id="content">
 
 			<?php echo $this->Session->flash(); ?>
