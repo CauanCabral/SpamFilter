@@ -71,6 +71,7 @@ ul, li {
 
 /** Layout **/
 #container {
+	float: left;
 	text-align: left;
 }
 
@@ -95,7 +96,6 @@ ul, li {
 	text-decoration: underline;
 }
 #menu{
-	position: relative;
 	float: left;
 	list-style: none;
 	display: block;
@@ -108,10 +108,14 @@ ul, li {
 	margin: 5px 0;
 }
 #content{
+	position: relative;
 	float: left;
+	min-width: 600px;
+	max-width: 800px;
 	background: #fff;
 	color: #333;
 	padding: 10px 20px 40px 20px;
+	border-left: 2px #000 solid;
 }
 #footer {
 	clear: both;
