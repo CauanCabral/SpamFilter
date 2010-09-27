@@ -11,44 +11,12 @@ class NaiveBayes extends BaseClassifier
 	public function modelGenerate($trainingSet)
 	{
 		parent::modelGenerate($trainingSet);
-
-		$this->probabilities = array_fill_keys(array_keys($this->classes), array_fill_keys($this->attributes, 0));
-
-		$classFreq = array_fill_keys(array_keys($this->classes), 0);
-
-		$pr = array();
-
-		// para cada instância
-		foreach($this->entries as $t => $x)
-		{
-			// recupera, do exemplo, a classe correta
-			$correctClass = $this->classes[$x['class']];
-
-			// conta a ocorrencia de instâncias com a classe dentro do domínio
-			$classFreq[$x['class']]++;
-
-			// cálcula probabilidade de cada atributo
-			foreach($x['attributes'] as $attr => $freq)
-			{
-				if(!isset($pr[$attr][$x['class']]))
-					$pr[$attr][$x['class']] = 0;
-				
-				$pr[$attr][$x['class']] += $freq;
-			}
-		}
-
-		$pr['spam'] = $classFreq['spam'] / $this->statistics['total'];
-		$pr['not_spam'] = $classFreq['not_spam'] / $this->statistics['total'];
-
-		// atualiza probabilidade dos atributos
-		foreach($pr as $attr => $freq)
-		{
-			if(array_key_exists($attr, $this->classes))
-				continue;
-			
-			$this->probabilities['spam'][$attr] = $freq['spam'] / $this->statistics['total'];
-			$this->probabilities['not_spam'][$attr] = $freq['not_spam'] / $this->statistics['total'];
-		}
+		
+		// valida a geração de modelos através de folds
+		$stats = $this->crossValidation();
+		
+		// gera o modelo final, baseado em todos os exemplos
+		$this->training($trainingSet);
 
 		return true;
 	}
@@ -90,6 +58,54 @@ class NaiveBayes extends BaseClassifier
 		}
 
 		return $classes;
+	}
+	
+	/**
+	 * Faz treinamento do modelo
+	 * 
+	 * @param array $trainingSet
+	 */
+	protected function training($trainingSet)
+	{
+		$this->probabilities = array_fill_keys(array_keys($this->classes), array_fill_keys($this->attributes, 0));
+
+		$classFreq = array_fill_keys(array_keys($this->classes), 0);
+
+		$pr = array();
+
+		// para cada instância
+		foreach($trainingSet['entries'] as $t => $x)
+		{
+			// recupera, do exemplo, a classe correta
+			$correctClass = $this->classes[$x['class']];
+
+			// conta a ocorrencia de instâncias com a classe dentro do domínio
+			$classFreq[$x['class']]++;
+
+			// cálcula probabilidade de cada atributo
+			foreach($x['attributes'] as $attr => $freq)
+			{
+				if(!isset($pr[$attr][$x['class']]))
+					$pr[$attr][$x['class']] = 0;
+				
+				$pr[$attr][$x['class']] += $freq;
+			}
+		}
+
+		$pr['spam'] = $classFreq['spam'] / $this->statistics['total'];
+		$pr['not_spam'] = $classFreq['not_spam'] / $this->statistics['total'];
+
+		// atualiza probabilidade dos atributos
+		foreach($pr as $attr => $freq)
+		{
+			if(array_key_exists($attr, $this->classes))
+				continue;
+			
+			$this->probabilities['spam'][$attr] = $freq['spam'] / $this->statistics['total'];
+			$this->probabilities['not_spam'][$attr] = $freq['not_spam'] / $this->statistics['total'];
+		}
+		
+		return $pr;
 	}
 
 	/**

@@ -47,6 +47,17 @@ if(isset($stats)):
 			<?php echo $stats['assertion_ratio']; ?>
 			&nbsp;
 		</dd>
+		<?php
+		if(isset($stats['devianation'])):
+		?>
+		<dt<?php if ($i % 2 == 0) echo $class;?>><?php __('Desvio Padrão'); ?></dt>
+		<dd<?php if ($i++ % 2 == 0) echo $class;?>>
+			<?php echo $stats['devianation']; ?>
+			&nbsp;
+		</dd>
+		<?php
+		endif;
+		?>
 	</dl>
 	<br />
 	<a class="collapse button" href="#">Ver detalhes do classificador</a>

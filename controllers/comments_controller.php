@@ -32,8 +32,8 @@ class CommentsController extends AppController {
 			
 			if ($this->Comment->save($this->data))
 			{
-				$this->Session->setFlash(__('The comment has been saved', true));
-				$this->redirect(array('action' => 'index'));
+				$this->Session->setFlash(__('Comentário salvo', true));
+				$this->redirect(array('action' => 'statistics'));
 			}
 			else
 			{

@@ -257,7 +257,7 @@ class Classifier extends AppModel
 		$report['number_of_attributes'] = count($this->_model->attributes);
 		$report['number_of_asserts'] = $this->_model->statistics['asserts'];
 
-		$report['assertion_ratio'] = ($this->_model->statistics['asserts'] / $this->_model->statistics['total']) * 100;
+		$report['assertion_ratio'] = $this->_model->statistics['assertion_ratio'] * 100;
 
 		if($report['type'] == 'Pa')
 		{
@@ -265,8 +265,11 @@ class Classifier extends AppModel
 		}
 		else
 		{
+			$report['devianation'] = $this->_model->statistics['devianation'];
 			$report['extra']['probabilities'] = $this->_model->getConfig();
 		}
+
+		$this->_model->crossValidation();
 
 		return $report;
 	}

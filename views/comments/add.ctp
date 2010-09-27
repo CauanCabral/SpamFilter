@@ -1,20 +1,18 @@
-<div class="comments form">
+<script type="text/javascript">
+$(document).ready(function() {
+	$('a.button').button();
+});
+</script>
+
+<div class="comments">
 <?php echo $this->Form->create('Comment');?>
 	<fieldset>
- 		<legend><?php __('Add Comment'); ?></legend>
+ 		<legend><?php __('Adicionar Comentário'); ?></legend>
 	<?php
-		echo $this->Form->input('name');
-		echo $this->Form->input('content');
-		echo $this->Form->input('spam');
+		echo $this->Form->input('name', array('label' => __('Autor', 1)));
+		echo $this->Form->input('content', array('label' => __('Conteúdo', 1)));
+		echo $this->Form->input('spam', array('label' => __('É Spam?', 1)));
 	?>
 	</fieldset>
-<?php echo $this->Form->end(__('Submit', true));?>
-</div>
-<div class="actions">
-	<h3><?php __('Actions'); ?></h3>
-	<ul>
-		<li><?php echo $this->Html->link(__('List Comments', true), array('action' => 'index'));?></li>
-		<li><?php echo $this->Html->link(__('Statistics', true), array('action' => 'statistics')); ?></li>
-		<li><?php echo $this->Html->link(__('Export', true), array('action' => 'export')); ?></li>
-	</ul>
+<?php echo $this->Form->end(__('Salvar', true));?>
 </div>

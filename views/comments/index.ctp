@@ -1,4 +1,10 @@
-<div class="comments index">
+<script type="text/javascript">
+$(document).ready(function() {
+	$('a.button').button();
+});
+</script>
+
+<div class="comments">
 	<h2><?php __('Comments');?></h2>
 	<table cellpadding="0" cellspacing="0">
 	<tr>
@@ -42,12 +48,4 @@
  |
 		<?php echo $this->Paginator->next(__('next', true) . ' >>', array(), null, array('class' => 'disabled'));?>
 	</div>
-</div>
-<div class="actions">
-	<h3><?php __('Actions'); ?></h3>
-	<ul>
-		<li><?php echo $this->Html->link(__('New Comment', true), array('action' => 'add')); ?></li>
-		<li><?php echo $this->Html->link(__('Statistics', true), array('action' => 'statistics')); ?></li>
-		<li><?php echo $this->Html->link(__('Export', true), array('action' => 'export')); ?></li>
-	</ul>
 </div>

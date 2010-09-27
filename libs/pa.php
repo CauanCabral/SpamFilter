@@ -31,6 +31,8 @@ class Pa extends BaseClassifier
 			// atualiza classificador
 			$this->modelUpdate($x['attributes'], $correctClass, $t);
 		}
+		
+		$this->statistics['assertion_ratio'] = $this->statistics['asserts'] / $this->statistics['total'];
 
 		return true;
 	}

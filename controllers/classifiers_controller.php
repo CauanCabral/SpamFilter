@@ -36,6 +36,8 @@ class ClassifiersController extends AppController {
 	 */
 	public function isSpam()
 	{
+		$response = array();
+		
 		/*
 		 * Tratamento de ação PUT (update)
 		 */
@@ -75,6 +77,8 @@ class ClassifiersController extends AppController {
 	 */
 	public function update($message = null, $class = 1)
 	{
+		$response = array();
+		
 		if(empty($message))
 		{
 			$response['errors'][] = __('Você precisa passar ao menos um parâmetro ao método', 1);
