@@ -124,4 +124,9 @@ class NaiveBayes extends BaseClassifier
 	{
 		return $this->probabilities;
 	}
+	
+	public function optimize($historyLength = 10)
+	{
+		unset($this->entries);
+	}
 }

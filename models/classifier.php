@@ -68,6 +68,8 @@ class Classifier extends AppModel
 		}
 
 		$this->_model->modelGenerate($trainingSet);
+		
+		$this->_model->optimize();
 
 		// guarda modelo de forma persistente (no bd)
 		return $this->save(array('model' => serialize($this->_model)));
@@ -257,7 +259,8 @@ class Classifier extends AppModel
 		$report['number_of_attributes'] = count($this->_model->attributes);
 		$report['number_of_asserts'] = $this->_model->statistics['asserts'];
 
-		$report['assertion_ratio'] = $this->_model->statistics['assertion_ratio'] * 100;
+		$report['assertion_ratio'] = $this->_model->statistics['assertion_ratio'];
+		$report['devianation'] = $this->_model->statistics['devianation'];
 
 		if($report['type'] == 'Pa')
 		{
@@ -265,11 +268,8 @@ class Classifier extends AppModel
 		}
 		else
 		{
-			$report['devianation'] = $this->_model->statistics['devianation'];
 			$report['extra']['probabilities'] = $this->_model->getConfig();
 		}
-
-		$this->_model->crossValidation();
 
 		return $report;
 	}

@@ -18,12 +18,23 @@ class Pa extends BaseClassifier
 	public function modelGenerate($trainingSet)
 	{
 		parent::modelGenerate($trainingSet);
+		
+		// valida a geração de modelos através de folds
+		$stats = $this->crossValidation();
+		
+		// gera o modelo final, baseado em todos os exemplos
+		$this->training($trainingSet);
 
+		return true;
+	}
+	
+	protected function training($trainingSet)
+	{
 		// inicializa W com zero para todos os atributos, na primeira rodada
-		$this->w[] = array_fill_keys($this->attributes, 0);
+		$this->w[0] = array_fill_keys($this->attributes, 0);
 
 		// para cada instância
-		foreach($this->entries as $t => $x)
+		foreach($trainingSet['entries'] as $t => $x)
 		{
 			// recupera, do exemplo, a classe correta
 			$correctClass = $this->classes[$x['class']];
@@ -31,10 +42,6 @@ class Pa extends BaseClassifier
 			// atualiza classificador
 			$this->modelUpdate($x['attributes'], $correctClass, $t);
 		}
-		
-		$this->statistics['assertion_ratio'] = $this->statistics['asserts'] / $this->statistics['total'];
-
-		return true;
 	}
 
 	/**
@@ -43,7 +50,7 @@ class Pa extends BaseClassifier
 	 * @param array $x Exemplo
 	 */
 	public function modelUpdate($x, $correctClass = null, $t = null)
-	{
+	{	
 		// se $t não é passado
 		if($t == null)
 		{
@@ -74,14 +81,6 @@ class Pa extends BaseClassifier
 		if($correctClass == null)
 		{
 			$correctClass = $y;
-		}
-		// caso contrário guarda estatística de acerto
-		else
-		{
-			if($y == $correctClass)
-			{
-				$this->statistics['asserts']++;
-			}
 		}
 
 		// cálcula e guarda a margem de precisão da predição
@@ -280,5 +279,17 @@ class Pa extends BaseClassifier
 		}
 
 		return $formatted;
+	}
+	
+	public function optimize($historyLength = 10)
+	{
+		$total = count($this->w);
+		
+		if($total > $historyLength)
+		{
+			$this->w = array_slice($this->w, 0, $total - $historyLength);
+		}
+		
+		unset($this->entries);
 	}
 }
