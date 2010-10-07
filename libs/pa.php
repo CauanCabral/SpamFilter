@@ -287,7 +287,8 @@ class Pa extends BaseClassifier
 		
 		if($total > $historyLength)
 		{
-			$this->w = array_slice($this->w, 0, $total - $historyLength);
+			$begin = $total - $historyLength;
+			$this->w = array_slice($this->w, $begin);
 		}
 		
 		unset($this->entries);

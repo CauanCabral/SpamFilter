@@ -102,9 +102,9 @@ class BaseClassifier
 		}
 
 		// gera os folds
-		foreach($this->entries as $entry)
+		foreach($this->entries as $j => $entry)
 		{
-			foreach($folds as &$fold)
+			foreach($folds as $t => &$fold)
 			{
 				// caso fold já esteja cheio, pula para próximo fold
 				if($fold['total'] == $parts_size)
@@ -123,6 +123,8 @@ class BaseClassifier
 						$fold['counter'][$entry['class']]++;
 
 						$fold['total']++;
+						
+						break;
 					}
 				}
 				// lógica usada em folds desbalanceados

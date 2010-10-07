@@ -89,11 +89,12 @@ class NaiveBayes extends BaseClassifier
 					$pr[$attr][$x['class']] = 0;
 				
 				$pr[$attr][$x['class']] += $freq;
+				//pr("entrie[{$t}] - attr[{$attr}] - class = {$x['class']}");
 			}
 		}
 
-		$pr['spam'] = $classFreq['spam'] / $this->statistics['total'];
-		$pr['not_spam'] = $classFreq['not_spam'] / $this->statistics['total'];
+		$freqFinal['spam'] = $classFreq['spam'] / $this->statistics['total'];
+		$freqFinal['not_spam'] = $classFreq['not_spam'] / $this->statistics['total'];
 
 		// atualiza probabilidade dos atributos
 		foreach($pr as $attr => $freq)
@@ -105,7 +106,7 @@ class NaiveBayes extends BaseClassifier
 			$this->probabilities['not_spam'][$attr] = $freq['not_spam'] / $this->statistics['total'];
 		}
 		
-		return $pr;
+		return $freqFinal;
 	}
 
 	/**
