@@ -401,20 +401,7 @@ class NaiveBayesComponent extends Object {
 	{
 		$tokens = preg_split($this->_settings['tokenSeparator'], $entry, null, PREG_SPLIT_NO_EMPTY);
 		
-		$out = array(
-			'links_count' => 0
-		);
-		
-		// identifica os links presentes
-		$links = filter_var_array($tokens, FILTER_VALIDATE_URL);
-		
-		foreach($links as $link)
-		{
-			if(!empty($link))
-			{
-				$out['links_count']++;
-			}
-		}
+		$out = array('links_count' => 0);
 		
 		foreach($tokens as $token)
 		{

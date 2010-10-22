@@ -3,9 +3,9 @@ class BaseClassifier
 {
 	public $name;
 
-	public $attributes = array();
+	public $attributes;
 
-	public $entries = array();
+	public $entries;
 
 	public $classField = 'class';
 
@@ -30,6 +30,10 @@ class BaseClassifier
 	 */
 	protected function __init()
 	{
+		$this->attributes = array();
+		
+		$this->entries = array();
+		
 		$this->statistics = array(
 			'asserts' => 0,
 			'total' => 0,
@@ -153,6 +157,7 @@ class BaseClassifier
 			}
 			
 			$toClassify = array();
+			$classes = array();
 			
 			foreach($folds[$i]['entries'] as $t => $entry)
 			{

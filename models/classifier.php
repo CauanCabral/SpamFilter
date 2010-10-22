@@ -42,25 +42,26 @@ class Classifier extends AppModel
 		foreach($entries as $t => $entry)
 		{
 			$attributes = $this->__identifyAttributes($entry['content']);
+			
 			$trainingSet['entries'][$t]['attributes'] = $attributes;
 			$trainingSet['entries'][$t]['class'] = $entry['class'];
 
 			foreach($attributes as $attr => $freq)
 			{
 				// verifica se o atributo já foi identificado em outra instância
-				if(!isset($trainingSet['attributes'][$attr]))
+				if(!in_array($attr, $trainingSet['attributes']))
 				{
 					$trainingSet['attributes'][] = $attr;
 				}
 			}
 		}
-
+		
 		// adiciona no vetor de entradas, os atributos inexistentes no exemplo
 		foreach($trainingSet['attributes'] as $attr)
 		{
 			foreach($trainingSet['entries'] as $k => $entry)
 			{
-				if(!isset($entry['attributes'][$attr]))
+				if(!in_array($attr, $trainingSet['attributes']))
 				{
 					$trainingSet['entries'][$k]['attributes'][$attr] = 0;
 				}

@@ -67,7 +67,11 @@ class NaiveBayes extends BaseClassifier
 	 */
 	protected function training($trainingSet)
 	{
-		$this->probabilities = array_fill_keys(array_keys($this->classes), array_fill_keys($this->attributes, 0));
+		$this->probabilities = array(
+			'priori' => array_fill_keys(array_keys($this->classes), 0),
+			'attributes' => 
+				array_fill_keys(array_keys($this->classes), array_fill_keys($this->attributes, 0))
+		);
 
 		$classFreq = array_fill_keys(array_keys($this->classes), 0);
 
@@ -85,16 +89,23 @@ class NaiveBayes extends BaseClassifier
 			// cálcula probabilidade de cada atributo
 			foreach($x['attributes'] as $attr => $freq)
 			{
-				if(!isset($pr[$attr][$x['class']]))
-					$pr[$attr][$x['class']] = 0;
+				// caso nao tenha sido inicializado o índice para o atributo corrente, faz a inicialização
+				if(!isset($pr[$attr]))
+				{
+					$pr[$attr] = array();
+					
+					foreach($this->classes as $className => $classCod)
+					{
+						$pr[$attr][$className] = 0;
+					}
+				}
 				
 				$pr[$attr][$x['class']] += $freq;
-				//pr("entrie[{$t}] - attr[{$attr}] - class = {$x['class']}");
 			}
 		}
 
-		$freqFinal['spam'] = $classFreq['spam'] / $this->statistics['total'];
-		$freqFinal['not_spam'] = $classFreq['not_spam'] / $this->statistics['total'];
+		$this->probabilities['priori']['spam'] = $classFreq['spam'] / $this->statistics['total'];
+		$this->probabilities['priori']['not_spam'] = $classFreq['not_spam'] / $this->statistics['total'];
 
 		// atualiza probabilidade dos atributos
 		foreach($pr as $attr => $freq)
@@ -102,11 +113,9 @@ class NaiveBayes extends BaseClassifier
 			if(array_key_exists($attr, $this->classes))
 				continue;
 			
-			$this->probabilities['spam'][$attr] = $freq['spam'] / $this->statistics['total'];
-			$this->probabilities['not_spam'][$attr] = $freq['not_spam'] / $this->statistics['total'];
+			$this->probabilities['attributes']['spam'][$attr] = $freq['spam'] / $this->statistics['total'];
+			$this->probabilities['attributes']['not_spam'][$attr] = $freq['not_spam'] / $this->statistics['total'];
 		}
-		
-		return $freqFinal;
 	}
 
 	/**
@@ -118,7 +127,7 @@ class NaiveBayes extends BaseClassifier
 	 */
 	protected function __p($attr, $freq, $class)
 	{
-		return log($freq) + log($this->probabilities[$class][$attr]);
+		return log($freq) + log($this->probabilities['attributes'][$class][$attr]);
 	}
 
 	public function getConfig()

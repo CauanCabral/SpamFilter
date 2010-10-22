@@ -5,7 +5,9 @@ class CommentsController extends AppController {
 	
 	public $helpers = array('Number');
 	
-	public $components = array('NaiveBayes');
+	public $components = array('NaiveBayes' => array(
+		'output' => array('types' => 'arff')
+	));
 
 	public function index()
 	{
