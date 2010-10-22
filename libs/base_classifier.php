@@ -7,7 +7,7 @@ class BaseClassifier
 
 	public $entries;
 
-	public $classField = 'class';
+	public $classField = 'class:';
 
 	public $classes = array(
 		'spam' => 1,
@@ -117,14 +117,14 @@ class BaseClassifier
 				// lógica usada para folds balanceados
 				if($balanced)
 				{
-					$b = bcdiv($fold['counter'][$entry['class']], $parts_size, 5);
+					$b = bcdiv($fold['counter'][$entry[$this->classField]], $parts_size, 5);
 
 					// caso a classe do exemplo atual não esteja 'saturado' no fold, adiciona ele ao fold
-					if($b <= $balance[$entry['class']])
+					if($b <= $balance[$entry[$this->classField]])
 					{
 						$fold['entries'][] = $entry;
 
-						$fold['counter'][$entry['class']]++;
+						$fold['counter'][$entry[$this->classField]]++;
 
 						$fold['total']++;
 						
@@ -144,7 +144,7 @@ class BaseClassifier
 		// guarda as estatísticas de cada model
 		$stats = array();
 
-		// efetuar a validação cruzda em sí
+		// efetuar a validação cruzada em sí
 		for($i = 0; $i < $num_folds; $i++)
 		{
 			for($j = 0; $j < $num_folds; $j++)
@@ -184,7 +184,7 @@ class BaseClassifier
 			
 			foreach($tests as $k => $info)
 			{
-				if($info['class'] == $info['correct'])
+				if($info[$this->classField] == $info['correct'])
 				{
 					$result['asserts']++;
 					$this->statistics['asserts']++;

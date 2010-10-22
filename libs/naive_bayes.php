@@ -1,7 +1,11 @@
 <?php
 class NaiveBayes extends BaseClassifier
 {
+	protected $priors;
+	
 	protected $probabilities;
+	
+	protected $likelihoods;
 
 	/**
 	 * Gera um model para o classificador
@@ -13,7 +17,7 @@ class NaiveBayes extends BaseClassifier
 		parent::modelGenerate($trainingSet);
 		
 		// valida a geração de modelos através de folds
-		$stats = $this->crossValidation();
+		$this->crossValidation();
 		
 		// gera o modelo final, baseado em todos os exemplos
 		$this->training($trainingSet);
@@ -41,20 +45,29 @@ class NaiveBayes extends BaseClassifier
 
 		foreach($entries as $t => $entry)
 		{
-			$isSpam = 0;
-			$notSpam = 0;
+			$p = array_fill_keys(array_keys($this->classes), 0);
+			$classes[$t][$this->classField] = 0;
+			$classes[$t]['p'] = -1;
 			
 			foreach($entry as $attr => $freq)
 			{
 				if($freq > 0)
 				{
-					$isSpam += $this->__p($attr, $freq, 'spam');
-					$notSpam += $this->__p($attr, $freq, 'not_spam');
+					foreach($p as $className => $prob)
+					{
+						$p[$className] *= (pow($this->probabilities[$attr][$className], $freq) + 1)/($this->priors[$className] + 1);
+					}
 				}
 			}
-
-			$classes[$t]['class'] = $isSpam > $notSpam ? 1 : -1;
-			$classes[$t]['p'] = $isSpam;
+			
+			foreach($p as $className => $prob)
+			{
+				if($classes[$t]['p'] < $prob)
+				{
+					$classes[$t][$this->classField] = $this->classes[$className];
+					$classes[$t]['p'] = $prob;
+				}
+			}
 		}
 
 		return $classes;
@@ -67,54 +80,57 @@ class NaiveBayes extends BaseClassifier
 	 */
 	protected function training($trainingSet)
 	{
-		$this->probabilities = array(
-			'priori' => array_fill_keys(array_keys($this->classes), 0),
-			'attributes' => 
-				array_fill_keys(array_keys($this->classes), array_fill_keys($this->attributes, 0))
-		);
+		// probabilidade de ocorrência de cada classe (a priori)
+		$this->priors = array_fill_keys(array_keys($this->classes), 1);
+		
+		// probabilidade de ocorrência de cada atributo em uma classe
+		$this->likelihoods = array_fill_keys(array_keys($this->classes), array_fill_keys($this->attributes, 0));
 
-		$classFreq = array_fill_keys(array_keys($this->classes), 0);
-
-		$pr = array();
+		// probabilidade posteriori
+		$this->probabilities = array_fill_keys($this->attributes, array_fill_keys(array_keys($this->classes), 0));
+		
+		// frequencias
+		$frequences = array_fill_keys($this->attributes, 0);
 
 		// para cada instância
 		foreach($trainingSet['entries'] as $t => $x)
 		{
 			// recupera, do exemplo, a classe correta
-			$correctClass = $this->classes[$x['class']];
+			$correctClass = $this->classes[$x[$this->classField]];
 
 			// conta a ocorrencia de instâncias com a classe dentro do domínio
-			$classFreq[$x['class']]++;
+			$this->priors[$x[$this->classField]]++;
 
-			// cálcula probabilidade de cada atributo
+			// conta frequencia dos atributos para calcular likelihood
 			foreach($x['attributes'] as $attr => $freq)
 			{
-				// caso nao tenha sido inicializado o índice para o atributo corrente, faz a inicialização
-				if(!isset($pr[$attr]))
-				{
-					$pr[$attr] = array();
-					
-					foreach($this->classes as $className => $classCod)
-					{
-						$pr[$attr][$className] = 0;
-					}
-				}
-				
-				$pr[$attr][$x['class']] += $freq;
+				$this->likelihoods[$x[$this->classField]][$attr] += $freq;
+				$frequences[$attr] += $freq;
+			}
+		}
+		
+		// calcula a probabilidade a priori
+		foreach($this->classes as $className => $classCod)
+		{
+			$this->priors[$className] = $this->priors[$className] / $this->statistics['total'];
+		}
+		
+		// calcula likelihood de cada atributo
+		foreach($this->likelihoods as $className => $attributes)
+		{
+			foreach($attributes as $attrs => $freq)
+			{
+				$this->likelihoods[$className][$attr] = $freq / $this->priors[$className];
 			}
 		}
 
-		$this->probabilities['priori']['spam'] = $classFreq['spam'] / $this->statistics['total'];
-		$this->probabilities['priori']['not_spam'] = $classFreq['not_spam'] / $this->statistics['total'];
-
-		// atualiza probabilidade dos atributos
-		foreach($pr as $attr => $freq)
+		// calcula probabilidade dos atributos (posteriori)
+		foreach($this->probabilities as $attr => $classes)
 		{
-			if(array_key_exists($attr, $this->classes))
-				continue;
-			
-			$this->probabilities['attributes']['spam'][$attr] = $freq['spam'] / $this->statistics['total'];
-			$this->probabilities['attributes']['not_spam'][$attr] = $freq['not_spam'] / $this->statistics['total'];
+			foreach($classes as $className => $classCod)
+			{
+				$this->probabilities[$attr][$className] = pow($this->likelihoods[$className][$attr], $frequences) / $this->priors[$className];
+			}
 		}
 	}
 
@@ -127,7 +143,7 @@ class NaiveBayes extends BaseClassifier
 	 */
 	protected function __p($attr, $freq, $class)
 	{
-		return log($freq) + log($this->probabilities['attributes'][$class][$attr]);
+		return log($freq) + log($this->probabilities[$attr][$class]);
 	}
 
 	public function getConfig()

@@ -20,7 +20,7 @@ class Pa extends BaseClassifier
 		parent::modelGenerate($trainingSet);
 		
 		// valida a geração de modelos através de folds
-		$stats = $this->crossValidation();
+		$this->crossValidation();
 		
 		// gera o modelo final, baseado em todos os exemplos
 		$this->training($trainingSet);
@@ -37,7 +37,7 @@ class Pa extends BaseClassifier
 		foreach($trainingSet['entries'] as $t => $x)
 		{
 			// recupera, do exemplo, a classe correta
-			$correctClass = $this->classes[$x['class']];
+			$correctClass = $this->classes[$x[$this->classField]];
 
 			// atualiza classificador
 			$this->modelUpdate($x['attributes'], $correctClass, $t);
@@ -50,7 +50,7 @@ class Pa extends BaseClassifier
 	 * @param array $x Exemplo
 	 */
 	public function modelUpdate($x, $correctClass = null, $t = null)
-	{	
+	{
 		// se $t não é passado
 		if($t == null)
 		{
@@ -100,9 +100,9 @@ class Pa extends BaseClassifier
 		/*
 		 * @FIXME teste meu
 		 */
-		if($l > 0.6) $y = -$y;
+		//if($l > 0.6) $y = -$y;
 
-		return array('class' => $y, 'p' => $l);
+		return array($this->classField => $y, 'p' => $l);
 	}
 
 	/**

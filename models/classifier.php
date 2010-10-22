@@ -44,7 +44,7 @@ class Classifier extends AppModel
 			$attributes = $this->__identifyAttributes($entry['content']);
 			
 			$trainingSet['entries'][$t]['attributes'] = $attributes;
-			$trainingSet['entries'][$t]['class'] = $entry['class'];
+			$trainingSet['entries'][$t]['class:'] = $entry['class'];
 
 			foreach($attributes as $attr => $freq)
 			{
@@ -61,7 +61,7 @@ class Classifier extends AppModel
 		{
 			foreach($trainingSet['entries'] as $k => $entry)
 			{
-				if(!in_array($attr, $trainingSet['attributes']))
+				if(!in_array($attr, array_keys($entry['attributes'])))
 				{
 					$trainingSet['entries'][$k]['attributes'][$attr] = 0;
 				}
@@ -208,7 +208,11 @@ class Classifier extends AppModel
 			if( mb_strlen($t) < 3 )
 				continue;
 
-			if(isset($out[$t]))
+			if(preg_match('/^www_/', $t))
+			{
+				$out['links_count']++;
+			}
+			else if(isset($out[$t]))
 			{
 				$out[$t]++;
 			}
@@ -217,12 +221,14 @@ class Classifier extends AppModel
 				$out[$t] = 1;
 			}
 		}
-
+		
 		// remove os tokens com pouca presença
 		foreach($out as $token => $freq)
 		{
 			if($freq < 3)
+			{
 				unset($out[$token]);
+			}
 		}
 
 		return $out;
