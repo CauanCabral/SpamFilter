@@ -1,7 +1,18 @@
 <?php
-
-require_once('base_classifier.php');
-
+/**
+ * Classe que implementa algorítimo PA(Passive-Agressive) para classificação
+ * de documentos de texto.
+ * 
+ * Projeto desenvolvido para o trabalho final de graduação em Bacharelado
+ * em Ciência da Computação, acadêmico Cauan Cabral.
+ * 
+ * 
+ * @author Cauan Cabral
+ * @link http://cauancabral.net
+ * @copyright Cauan Cabral @ 2010
+ * @license MIT License
+ *
+ */
 class Pa extends BaseClassifier
 {
 	/**
@@ -24,12 +35,19 @@ class Pa extends BaseClassifier
 		
 		// gera o modelo final, baseado em todos os exemplos
 		$this->training($trainingSet);
-
+		
 		return true;
 	}
 	
+	/**
+	 * @see libs/base_classifier.php#
+	 * 
+	 * @param array $trainingSet
+	 */
 	protected function training($trainingSet)
 	{
+		parent::training($trainingSet);
+		
 		// inicializa W com zero para todos os atributos, na primeira rodada
 		$this->w[0] = array_fill_keys($this->attributes, 0);
 
@@ -45,9 +63,11 @@ class Pa extends BaseClassifier
 	}
 
 	/**
-	 *
-	 * @param int $t Rodada do classificador
-	 * @param array $x Exemplo
+	 * Método que implementa a atualização do classificador PA
+	 * 
+	 * @param $x Instâcia
+	 * @param $correctClass Classe correta para a instância $x
+	 * @param $t Posição no 'tempo' em que o classificador deve ser atualizado
 	 */
 	public function modelUpdate($x, $correctClass = null, $t = null)
 	{
@@ -176,6 +196,7 @@ class Pa extends BaseClassifier
 	 * Cálcula a norma de um vetor
 	 * 
 	 * @param array $vector
+	 * 
 	 * @return float
 	 */
 	protected function __norm($vector)
@@ -202,6 +223,7 @@ class Pa extends BaseClassifier
 	 *
 	 * @param int $y
 	 * @param float $dotProduct
+	 * 
 	 * @return float
 	 */
 	protected function __sufferLoss($y, $dotProduct)
@@ -221,7 +243,8 @@ class Pa extends BaseClassifier
 	 * @param float $x - Norma correspondente ao exemplo
 	 * @param int $type - Tipo do PA: 0, 1 e 2. 0 é o valor default
 	 * @param float $C - Deve ser positivo (necessário apenas para os tipos 1 e 2 do PA)
-	 * @return <type>
+	 * 
+	 * @return float $t - o valor 'tau'
 	 */
 	protected function __tau($l, $x, $type = 0, $C = 1)
 	{
@@ -249,7 +272,12 @@ class Pa extends BaseClassifier
 	}
 
 	/**
-	 * Método auxiliar
+	 * Método auxiliar para impressão do modelo
+	 * 
+	 * @param $all - parâmetro que define se serão impressas
+	 * todas as entradas do modelo ou apenas a última
+	 * 
+	 * @return void
 	 */
 	public function printModel($all = false)
 	{
@@ -267,7 +295,9 @@ class Pa extends BaseClassifier
 	}
 
 	/**
-	 *
+	 * Retorna o modelo
+	 * 
+	 * @return array 
 	 */
 	public function getConfig()
 	{
@@ -278,9 +308,16 @@ class Pa extends BaseClassifier
 			$formatted[$t] = $x;
 		}
 
-		return $formatted;
+		return $this->w;
 	}
 	
+	/**
+	 * Remove dados não essenciais do classificador afim
+	 * de otimizar seu processo de serialização, persistência
+	 * e recuperação
+	 * 
+	 * @param int $historyLength
+	 */
 	public function optimize($historyLength = 10)
 	{
 		$total = count($this->w);

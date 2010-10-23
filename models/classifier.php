@@ -1,12 +1,39 @@
 <?php
-App::import('Lib', array('Pa', 'NaiveBayes'));
+App::import('Lib', array('BaseClassifier', 'Pa', 'NaiveBayes'));
 
+/**
+ * Modelo responsável por gerenciar os diferentes classificadores
+ * da aplicação.
+ * Faz uma ponte entre o classificador e a aplicação, preparando
+ * os dados para o classificador e retornando seus dados.
+ * 
+ * Projeto desenvolvido para o trabalho final de graduação em Bacharelado
+ * em Ciência da Computação, acadêmico Cauan Cabral.
+ * 
+ * 
+ * @author Cauan Cabral
+ * @link http://cauancabral.net
+ * @copyright Cauan Cabral @ 2010
+ * @license MIT License
+ *
+ */
 class Classifier extends AppModel
 {
 	public $name = 'Classifier';
 
+	/**
+	 * ER responsável pela quebra das mensagens em tokens
+	 * 
+	 * @var $_tokenSeparator string
+	 */
 	protected $_tokenSeparator = '/\s|\[|\]|<|>|\?|;|\"|\'|\=|\/|:|\(|\)|!|&/';
 
+	/**
+	 * Atributo com referência ao classificador utilziado
+	 * no momento
+	 * 
+	 * @var $_model object
+	 */
 	protected $_model = null;
 
 	/**
@@ -44,7 +71,7 @@ class Classifier extends AppModel
 			$attributes = $this->__identifyAttributes($entry['content']);
 			
 			$trainingSet['entries'][$t]['attributes'] = $attributes;
-			$trainingSet['entries'][$t]['class:'] = $entry['class'];
+			$trainingSet['entries'][$t][$this->_model->classField] = $entry['class'];
 
 			foreach($attributes as $attr => $freq)
 			{
@@ -62,7 +89,7 @@ class Classifier extends AppModel
 			foreach($trainingSet['entries'] as $k => $entry)
 			{
 				if(!in_array($attr, array_keys($entry['attributes'])))
-				{
+				{	
 					$trainingSet['entries'][$k]['attributes'][$attr] = 0;
 				}
 			}
@@ -108,8 +135,10 @@ class Classifier extends AppModel
 	}
 
 	/**
-	 *
-	 * @param <type> $entries
+	 * Método que classifica e retorna a classe
+	 * de um conjunto de instâncias
+	 * 
+	 * @param array $entries
 	 */
 	public function classify($entries)
 	{
@@ -148,10 +177,12 @@ class Classifier extends AppModel
 	}
 
 	/**
-	 *
-	 * @param <type> $content
-	 * @param <type> $class
-	 * @param <type> $options
+	 * Realiza atualização do classificador baseado em um
+	 * exemplo com classe conhecida
+	 * 
+	 * @param string $content
+	 * @param string $class
+	 * @param array $options
 	 */
 	public function update($content, $class, $options = array())
 	{
@@ -208,11 +239,13 @@ class Classifier extends AppModel
 			if( mb_strlen($t) < 3 )
 				continue;
 
+			// contagem de links
 			if(preg_match('/^www_/', $t))
 			{
 				$out['links_count']++;
 			}
-			else if(isset($out[$t]))
+			
+			if(isset($out[$t]))
 			{
 				$out[$t]++;
 			}
@@ -251,11 +284,22 @@ class Classifier extends AppModel
 		return $out;
 	}
 
+	/**
+	 * 'Printa' o classificador
+	 * 
+	 * @return void
+	 */
 	public function printModel()
 	{
 		$this->_model->printModel(true);
 	}
 
+	/**
+	 * Gera um relatório sobre o classificador e o
+	 * retorna
+	 * 
+	 * @return array relatório
+	 */
 	public function modelReport()
 	{
 		$report = array();
@@ -281,6 +325,11 @@ class Classifier extends AppModel
 		return $report;
 	}
 
+	/**
+	 * Imprime as estatísticas do classificador
+	 * 
+	 * @return void
+	 */
 	public function printStats()
 	{
 		$this->_model->printStats();

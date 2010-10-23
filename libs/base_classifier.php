@@ -1,21 +1,82 @@
 <?php
+/**
+ * Classe base para definição de classificadores.
+ * 
+ * Implementa interfaces e métodos genéricos úteis para uma grande
+ * gama de classificadores.
+ * 
+ * Projeto desenvolvido para o trabalho final de graduação em Bacharelado
+ * em Ciência da Computação, acadêmico Cauan Cabral.
+ * 
+ * 
+ * @author Cauan Cabral
+ * @link http://cauancabral.net
+ * @copyright Cauan Cabral @ 2010
+ * @license MIT License
+ *
+ */
 class BaseClassifier
 {
+	/**
+	 * Atributo contendo o nome classificador
+	 * Utilizado para diferenciar classificadores persistidos no
+	 * banco de dados
+	 * 
+	 * @var string
+	 */
 	public $name;
 
+	/**
+	 * Atributo contendo todos os atributos verificados
+	 * pelo algorítimo ao classificar uma instância
+	 * 
+	 * @var array
+	 */
 	public $attributes;
 
+	/**
+	 * Atributo contendo todos os atributos utilizados
+	 * pelo classificador ao gerar seu modelo
+	 * 
+	 * @var array
+	 */
 	public $entries;
 
+	/**
+	 * Atributo com o campo analisado e usado pelo
+	 * classificador para treinar e atribuir classes
+	 * às instâncias
+	 * 
+	 * @var string
+	 */
 	public $classField = 'class:';
 
+	/**
+	 * Atributo com as classes utilizadas
+	 * no classificador, onde o índice é sua representação
+	 * nominal, enquanto o valor é sua representação numérica
+	 * 
+	 * @var array
+	 */
 	public $classes = array(
 		'spam' => 1,
 		'not_spam' => -1
 	);
-
+	
+	/**
+	 * Atributo contendo estatísticas relacionadas
+	 * ao classificador
+	 * 
+	 * @var array
+	 */
 	public $statistics;
 
+	/**
+	 * Construtor do classificador
+	 * 
+	 * @param string $name
+	 * @param int $precision
+	 */
 	public function __construct($name, $precision = 4)
 	{
 		$this->name = $name;
@@ -26,7 +87,10 @@ class BaseClassifier
 	}
 	
 	/**
+	 * Método responsável pela inicialização dos atributos do
+	 * classificador
 	 * 
+	 * @return void
 	 */
 	protected function __init()
 	{
@@ -46,6 +110,7 @@ class BaseClassifier
 	 * Gera um model para o classificador
 	 *
 	 * @param array $trainingSet
+	 * @param bool success
 	 */
 	public function modelGenerate($trainingSet)
 	{
@@ -63,7 +128,11 @@ class BaseClassifier
 	}
 
 	/**
-	 *
+	 * Atualiza o classificador
+	 * 
+	 * Parâmetros dependem da classe que extende está (do algorítimo utilizado)
+	 * 
+	 * @return bool success
 	 */
 	public function modelUpdate()
 	{
@@ -71,9 +140,12 @@ class BaseClassifier
 	}
 
 	/**
-	 * Classifica um conjunto de entradas
+	 * Classifica um conjunto de entradas e retorna
+	 * um array com as classes aplicadas
 	 *
 	 * @param array $entries
+	 * 
+	 * @return array $classes
 	 */
 	public function classify($entries)
 	{
@@ -81,10 +153,11 @@ class BaseClassifier
 	}
 
 	/**
-	 * Implementação da validação cruzada
+	 * Implementação da validação cruzada, de forma genérica
 	 *
-	 * @param int $num_folds
-	 * @param bool balanced
+	 * @param int $num_folds define a quantidade de folds que serão criados
+	 * @param bool balanced define se a validação cruzada será "stratified" ou convencional,
+	 * isto é, se a proporção de classes será observada na criação dos folds.
 	 */
 	public function crossValidation($num_folds = 10, $balanced = true)
 	{
@@ -145,16 +218,9 @@ class BaseClassifier
 		$stats = array();
 
 		// efetuar a validação cruzada em sí
-		for($i = 0; $i < $num_folds; $i++)
+		for($i = 0, $j = 1; $i < $num_folds; $i++)
 		{
-			for($j = 0; $j < $num_folds; $j++)
-			{
-				// pula o fold que será usado para teste
-				if($j == $i)
-					continue;
-				
-				$this->training($folds[$j]);
-			}
+			$this->training($folds[$j]);
 			
 			$toClassify = array();
 			$classes = array();
@@ -173,6 +239,8 @@ class BaseClassifier
 			}
 			
 			$stats[] = $result;
+			
+			$j = ($j + 1) % $num_folds;
 		}
 		
 		// cálculo da taxa de acerto
@@ -211,18 +279,18 @@ class BaseClassifier
 	
 	/**
 	 * Deve ser implementado em cada subclasse
-	 * Efetua o treinamento do modelo
+	 * Efetua o treinamento do modelo, de acordo com o algorítimo
+	 * da classe (NaiveBayes, PA, Perceptron...) 
 	 * 
 	 * @param array $trainingSet
+	 * @return void
 	 */
-	protected function training($trainingSet)
-	{
-		return false;
-	}
+	protected function training($trainingSet) {}
 
 	/**
 	 * Identifica a proporção das classes no modelo
-	 * atual
+	 * atual e retorna um array com o percentual de cada
+	 * uma
 	 *
 	 * @return array
 	 */
@@ -259,10 +327,32 @@ class BaseClassifier
 
 		return $balance;
 	}
+	
+	/**
+	 * Método auxliar para escrita de arquivos
+	 * 
+	 * @param string $name
+	 * @param array $data
+	 * 
+	 * @return bool success
+	 */
+	private function __writeFile($name, $data)
+	{
+		$file = new SplFileObject($name, "w");
+		$written = $file->fwrite($data);
+		chmod($name, 0777);
+		
+		return ($written !== null);
+	}
 
+	/**
+	 * Printa informações sobre o classificador
+	 * 
+	 * @return void
+	 */
 	public function printStats()
 	{
-		echo 'Total de instâncias: ', $this->statistics['total'], "\n Número de acertos: ", $this->statistics['asserts'];
+		echo 'Total de instâncias: ', $this->statistics['total'], "\n Número de acertos: ", $this->statistics['asserts'], "\n Desvio Padrão: ", $this->statistics['devianation'];
 	}
 
 }

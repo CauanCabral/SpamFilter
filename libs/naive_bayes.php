@@ -1,4 +1,18 @@
 <?php
+/**
+ * Classe que implementa algorítimo NaiveBayes para classificação de 
+ * documentos de texto.
+ * 
+ * Projeto desenvolvido para o trabalho final de graduação em Bacharelado
+ * em Ciência da Computação, acadêmico Cauan Cabral.
+ * 
+ * 
+ * @author Cauan Cabral
+ * @link http://cauancabral.net
+ * @copyright Cauan Cabral @ 2010
+ * @license MIT License
+ *
+ */
 class NaiveBayes extends BaseClassifier
 {
 	protected $priors;
@@ -21,7 +35,7 @@ class NaiveBayes extends BaseClassifier
 		
 		// gera o modelo final, baseado em todos os exemplos
 		$this->training($trainingSet);
-
+		
 		return true;
 	}
 
@@ -80,6 +94,8 @@ class NaiveBayes extends BaseClassifier
 	 */
 	protected function training($trainingSet)
 	{
+		parent::training($trainingSet);
+		
 		// probabilidade de ocorrência de cada classe (a priori)
 		$this->priors = array_fill_keys(array_keys($this->classes), 1);
 		

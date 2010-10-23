@@ -1,3 +1,4 @@
+/webroot/spams*
 /config/bootstrap.local.php
 /tmp/cache/models/*
 /tmp/cache/views/*
