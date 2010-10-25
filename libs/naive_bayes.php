@@ -17,8 +17,6 @@ class NaiveBayes extends BaseClassifier
 {
 	protected $priors;
 	
-	protected $probabilities;
-	
 	protected $likelihoods;
 
 	/**
@@ -45,7 +43,6 @@ class NaiveBayes extends BaseClassifier
 	 */
 	public function modelUpdate()
 	{
-		
 	}
 
 	/**
@@ -59,20 +56,10 @@ class NaiveBayes extends BaseClassifier
 
 		foreach($entries as $t => $entry)
 		{
-			$p = array_fill_keys(array_keys($this->classes), 0);
 			$classes[$t][$this->classField] = 0;
 			$classes[$t]['p'] = -1;
 			
-			foreach($entry as $attr => $freq)
-			{
-				if($freq > 0)
-				{
-					foreach($p as $className => $prob)
-					{
-						$p[$className] *= (pow($this->probabilities[$attr][$className], $freq) + 1)/($this->priors[$className] + 1);
-					}
-				}
-			}
+			$p = $this->__p($entry);
 			
 			foreach($p as $className => $prob)
 			{
@@ -139,15 +126,6 @@ class NaiveBayes extends BaseClassifier
 				$this->likelihoods[$className][$attr] = $freq / $this->priors[$className];
 			}
 		}
-
-		// calcula probabilidade dos atributos (posteriori)
-		foreach($this->probabilities as $attr => $classes)
-		{
-			foreach($classes as $className => $classCod)
-			{
-				$this->probabilities[$attr][$className] = pow($this->likelihoods[$className][$attr], $frequences) / $this->priors[$className];
-			}
-		}
 	}
 
 	/**
@@ -157,14 +135,28 @@ class NaiveBayes extends BaseClassifier
 	 * @param array $attr
 	 * @param string $class
 	 */
-	protected function __p($attr, $freq, $class)
+	protected function __p($entry)
 	{
-		return log($freq) + log($this->probabilities[$attr][$class]);
+		// inicializa probabilidade com termo neutro da soma
+		$p = array_fill_keys(array_keys($this->classes), 0);
+		
+		foreach($entry as $attr => $freq)
+		{
+			if($freq > 0)
+			{
+				foreach($p as $className => $prob)
+				{
+					$p[$className] += log( ( pow($this->likelihoods[$className][$attr], $freq) + 1) / ($this->priors[$className] + 1) );
+				}
+			}
+		}
+		
+		return $p;
 	}
 
 	public function getConfig()
 	{
-		return $this->probabilities;
+		return $this->likelihoods;
 	}
 	
 	public function optimize($historyLength = 10)
