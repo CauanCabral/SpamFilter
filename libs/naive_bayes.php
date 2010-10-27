@@ -50,24 +50,33 @@ class NaiveBayes extends BaseClassifier
 	 *
 	 * @param array $entries
 	 */
-	public function classify($entries)
+	public function classify($entries, $useDefault = false)
 	{
 		$classes = array();
 
 		foreach($entries as $t => $entry)
 		{
 			$classes[$t][$this->classField] = 0;
-			$classes[$t]['p'] = -1;
+			$classes[$t]['p'] = null;
 			
 			$p = $this->__p($entry);
 			
 			foreach($p as $className => $prob)
 			{
-				if($classes[$t]['p'] < $prob)
+				if($classes[$t]['p'] == null || $classes[$t]['p'] < $prob)
 				{
 					$classes[$t][$this->classField] = $this->classes[$className];
 					$classes[$t]['p'] = $prob;
 				}
+			}
+		}
+		
+		if($useDefault)
+		{
+			foreach($classes as $t => $entry)
+			{
+				if($entry['p'] == 1)
+					$classes[$t][$this->classField] = $this->defaultClass;
 			}
 		}
 
@@ -91,9 +100,6 @@ class NaiveBayes extends BaseClassifier
 
 		// probabilidade posteriori
 		$this->probabilities = array_fill_keys($this->attributes, array_fill_keys(array_keys($this->classes), 0));
-		
-		// frequencias
-		$frequences = array_fill_keys($this->attributes, 0);
 
 		// para cada instância
 		foreach($trainingSet['entries'] as $t => $x)
@@ -108,7 +114,6 @@ class NaiveBayes extends BaseClassifier
 			foreach($x['attributes'] as $attr => $freq)
 			{
 				$this->likelihoods[$x[$this->classField]][$attr] += $freq;
-				$frequences[$attr] += $freq;
 			}
 		}
 		
@@ -138,7 +143,7 @@ class NaiveBayes extends BaseClassifier
 	protected function __p($entry)
 	{
 		// inicializa probabilidade com termo neutro da soma
-		$p = array_fill_keys(array_keys($this->classes), 0);
+		$p = array_fill_keys(array_keys($this->classes), 1);
 		
 		foreach($entry as $attr => $freq)
 		{
@@ -146,11 +151,12 @@ class NaiveBayes extends BaseClassifier
 			{
 				foreach($p as $className => $prob)
 				{
-					$p[$className] += log( ( pow($this->likelihoods[$className][$attr], $freq) + 1) / ($this->priors[$className] + 1) );
+					$tmp = $freq * ( $this->likelihoods[$className][$attr] + 1 ) / ($this->priors[$className] + 1);
+					
+					$p[$className] *= $tmp;
 				}
 			}
 		}
-		
 		return $p;
 	}
 

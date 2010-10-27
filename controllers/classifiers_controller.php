@@ -107,7 +107,7 @@ class ClassifiersController extends AppController {
 				
 				break;
 			case 'classify':
-				$entries = $this->__loadComments($comments, $comments);
+				$entries = $this->__loadComments($comments);
 
 				$this->Classifier->loadModel($model_id);
 				$this->set('classifieds', Set::merge($entries, $this->Classifier->classify($entries)));
@@ -143,6 +143,7 @@ class ClassifiersController extends AppController {
 		foreach($comments as $comment)
 		{
 			$entries[] = array(
+				'__id__' => $comment['Comment']['id'],
 				'class' => $comment['Comment']['spam'] ? 'spam' : 'not_spam',
 				'content' => $comment['Comment']['content']
 			);

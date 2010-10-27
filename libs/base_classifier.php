@@ -64,6 +64,18 @@ class BaseClassifier
 	);
 	
 	/**
+	 * Atributo que define o valor da
+	 * classe padrão, utilizada quando não há grande
+	 * certeza ao atribuir uma classe à uma instância
+	 * 
+	 * Seu valor deve ser igual a um dos possíveis valores
+	 * do atributo $classes
+	 * 
+	 * @var int
+	 */
+	public $defaultClass = -1;
+	
+	/**
 	 * Atributo contendo estatísticas relacionadas
 	 * ao classificador
 	 * 

@@ -114,6 +114,7 @@ if(isset($classifieds)):
 			&nbsp;
 		</dd>
 	</dl>
+	<br />
 <?php
 	endforeach;
 endif;
