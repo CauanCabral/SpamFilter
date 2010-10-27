@@ -174,28 +174,18 @@ class Classifier extends AppModel
 		}
 		
 		$classes = $this->_model->classify($toClassify);
-		$c = 0; 
 
 		foreach($entries as $t => $entry)
 		{
-			$classes[$t]['id'] = $entry['__id__'];
 			$classes[$t]['class'] = $classes[$t][$this->_model->classField];
 			
 			unset($classes[$t][$this->_model->classField]);
 			
 			if(isset($entry['class']))
 			{
-				$classes[$t]['correct'] = $entry['class'] == 'spam' ? 1 : -1;
-				
-				if($classes[$t]['correct'] != $classes[$t]['class'])
-				{
-					pr($classes[$t]);
-					$c++;
-				}
+				$classes[$t]['correct'] = ($entry['class'] == 'spam') ? 1 : -1;
 			}
 		}
-		
-		pr('erros: ' . $c);
 		
 		return $classes; 
 	}
