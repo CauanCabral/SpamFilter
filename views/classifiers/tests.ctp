@@ -8,6 +8,11 @@ $(document).ready(function() {
 		e.preventDefault();
 		$(this).next('div.collapse').toggle();
 	});
+
+	$('a.classify').click(function(e) {
+		e.preventDefault();
+		$(this).next('div.collapse').toggle();
+	});
 });
 </script>
 

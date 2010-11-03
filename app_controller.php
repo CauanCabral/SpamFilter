@@ -44,7 +44,7 @@ class AppController extends Controller {
 			return;
 		}
 		
-		if( $this->RequestHandler->isPost() ||
+		if( ($this->RequestHandler->isPost() && $this->params['action'] != 'classify') ||
 			$this->RequestHandler->isAjax() ||
 			(isset($this->params['prefix']) && $this->params['prefix'] === 'api')
 			)

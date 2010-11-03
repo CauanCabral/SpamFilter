@@ -74,6 +74,29 @@ class ClassifiersController extends AppController {
 	
 	/**
 	 * 
+	 * @param int $model_id
+	 */
+	public function classify()
+	{
+		if(!empty($this->data))
+		{
+			$entries = array();
+	
+			$entries[] = array(
+				'class' => $this->data['Classifier']['spam'] ? 'spam' : 'not_spam',
+				'content' => $this->data['Classifier']['content']
+			);
+	
+			$this->Classifier->loadModel($this->data['Classifier']['classifier']);
+			
+			$this->set('classifieds', Set::merge($entries, $this->Classifier->classify($entries)));
+		}
+		
+		$this->set('classifiers', $this->Classifier->find('list', array('fields' => array('id', 'type'))));
+	}
+	
+	/**
+	 * 
 	 * @param string $message json formatted
 	 * @param enum{not spam, spam} $class
 	 * 

@@ -103,7 +103,7 @@ class Classifier extends AppModel
 		}
 
 		// guarda modelo de forma persistente (no bd)
-		return $this->save(array('model' => serialize($this->_model)));
+		return $this->save(array('model' => serialize($this->_model), 'type' => $type));
 	}
 
 	/**
