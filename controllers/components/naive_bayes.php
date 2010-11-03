@@ -26,6 +26,7 @@ class NaiveBayesComponent extends Object {
 			'domain' => 'dom -a %s %s',
 			'inductor' => 'bci  %s %s %s',
 			'classifier' => 'bcx -cClassified -pConfidence -x -w %s %s %s',
+			'compact' => 'tar -zcf %s.tar.gz %s',
 			'output' => array(
 				'types' => 'both', // valores válidos: tab, arff e both (ambos)
 				'missingSymbol' => '?',
@@ -118,6 +119,17 @@ class NaiveBayesComponent extends Object {
 			return false;
 		}
 		
+		// compacta arquivos gerados
+		exec(
+			sprintf(
+				$this->_settings['compact'],
+				$this->_model['name'],
+				$this->_model['name'] . '.tab ' . $this->_model['name'] . '.nbc ' . $this->_model['name'] . '.arff'
+			),
+			$exec_out,
+			$status
+		);
+		
 		return true;
 	}
 	
@@ -182,6 +194,70 @@ class NaiveBayesComponent extends Object {
 			'class' => $classified[$l - 3],
 			'confidence' => $classified[$l - 2]
 		);
+	}
+	
+	/**
+	 * 
+	 * @param array $trainingSet
+	 * 
+	 * @return string Nome do arquivo tar com os dados
+	 */
+	public function export($trainingSet)
+	{
+		if(!is_array($trainingSet))
+		{
+			trigger_error(__('Training set must be an array', true), E_USER_ERROR);
+		}
+		
+		if( $this->_settings['output']['types'] == 'both' || $this->_settings['output']['types'] == 'tab' )
+		{
+			// formata as instancias para salvar como arquivo '.tab'
+			$modelContent = $this->_entriesFormatTab($trainingSet, true);
+			
+			// salva arquivo '.tab' com as entradas (instancias)
+			if( !$this->_writeFile($this->_model['name'] . '.tab', $modelContent) )
+			{
+				trigger_error(__('Model file can\'t be saved. Check system permissions', true), E_USER_ERROR);
+			}
+		}
+		
+		if( $this->_settings['output']['types'] == 'both' || $this->_settings['output']['types'] == 'arff')
+		{
+			// formata as instancias para salvar como arquivo '.arff'
+			$modelContent = $this->_entriesFormatArff($trainingSet);
+			
+			// salva arquivo '.arff' com as entradas (instancias)
+			if( !$this->_writeFile($this->_model['name'] . '.arff', $modelContent) )
+			{
+				trigger_error(__('Model file can\'t be saved. Check system permissions', true), E_USER_ERROR);
+			}
+		}
+		
+		// array auxiliar que armazenará a saída do último binário executado via 'exec'
+		$exec_out = array();
+		
+		// compacta arquivos gerados
+		exec(
+			sprintf(
+				$this->_settings['compact'],
+				$this->_model['name'],
+				$this->_model['name'] . '.tab ' . $this->_model['name'] . '.arff'
+			),
+			$exec_out,
+			$status
+		);
+		
+		if($status !== 0)
+		{
+			trigger_error(__('Can\'t compact data.', true), E_USER_ERROR);
+			return false;
+		}
+		
+		$name = $this->_model['name'] . '.tar.gz';
+		
+		chmod($name, 0777);
+		
+		return $name;
 	}
 	
 	/**

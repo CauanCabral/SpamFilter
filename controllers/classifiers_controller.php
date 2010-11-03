@@ -160,6 +160,8 @@ class ClassifiersController extends AppController {
 	 */
 	public function export()
 	{
+		$this->autoRender = false;
+		
 		$this->loadModel('Comment');
 		
 		$comments = $this->Comment->find('all');
@@ -173,7 +175,21 @@ class ClassifiersController extends AppController {
 			);
 		}
 		
-		$this->NaiveBayes->modelGenerate($entries);
+		$filename = $this->NaiveBayes->export($entries);
+		
+		$this->view = 'Media';
+		
+		$params = array(
+			'id' => $filename,
+			'name' => 'arquivos.tar',
+			'download' => true,
+			'extension' => 'gz',
+			'path' => './'
+		);
+		
+		$this->set($params);
+		
+		$this->render();
 	}
 
 	private function __loadComments($param = 'all')
