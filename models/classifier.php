@@ -20,6 +20,10 @@ App::import('Lib', array('BaseClassifier', 'Pa', 'NaiveBayes'));
 class Classifier extends AppModel
 {
 	public $name = 'Classifier';
+	
+	public $virtualFields = array(
+		'alias' => 'CONCAT(Classifier.type, "_", Classifier.id)'
+	);
 
 	/**
 	 * ER responsável pela quebra das mensagens em tokens

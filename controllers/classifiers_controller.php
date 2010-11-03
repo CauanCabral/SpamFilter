@@ -92,7 +92,7 @@ class ClassifiersController extends AppController {
 			$this->set('classifieds', Set::merge($entries, $this->Classifier->classify($entries)));
 		}
 		
-		$this->set('classifiers', $this->Classifier->find('list', array('fields' => array('id', 'type'))));
+		$this->set('classifiers', $this->Classifier->find('list', array('fields' => array('id', 'alias'))));
 	}
 	
 	/**
