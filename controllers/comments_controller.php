@@ -6,7 +6,8 @@ class CommentsController extends AppController {
 	public $helpers = array('Number');
 	
 	public $components = array('NaiveBayes' => array(
-		'output' => array('types' => 'arff')
+		'binaryPath' => '/usr/local/bin/',
+		'output' => array('types' => 'both')
 	));
 
 	public function index()
@@ -97,27 +98,5 @@ class CommentsController extends AppController {
 		$response = $socket->post($url, array('data' => json_encode(array('message' => $comment['Comment']['content']))));
 		
 		pr(json_decode($response));
-	}
-	
-	/**
-	 * Gera arquivos Arff e Tab para uso com WEKA  e implementações
-	 * do Borgelt do NaiveBayes
-	 * 
-	 * @return void
-	 */
-	public function export()
-	{	
-		$comments = $this->Comment->find('all');
-		$entries = array();
-		
-		foreach($comments as $comment)
-		{
-			$entries[] = array(
-				'class' => $comment['Comment']['spam'] ? 'spam' : 'not_spam',
-				'content' => $comment['Comment']['content']
-			);
-		}
-		
-		$this->NaiveBayes->modelGenerate($entries);
 	}
 }

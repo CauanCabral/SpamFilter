@@ -63,32 +63,45 @@ if(isset($stats)):
 	<a class="collapse button" href="#">Ver detalhes do classificador</a>
 	<div class="collapse">
 		<?php
-			foreach($stats['extra'] as $sec => $data):
-				echo '<br /> >> <a href="#'.$sec.'" class="collapse button">', $sec, '</a>';
+		foreach($stats['extra'] as $sec => $data):
+			echo '<br /> >> <a href="#'.$sec.'" class="collapse button">', $sec, '</a>';
+		
+			echo '<div class="collapse">';
 			
-				echo '<div class="collapse accordion">';
-				
-				foreach($data as $anchor => $entry):
-					echo '<br /> >>>> <a href="#" class="collapse button">', $anchor, '</a>';
-					echo '<div class="collapse">';
-					
-					if(is_array($entry)):
-						echo '<table>', "\n";
-
-						foreach($entry as $key => $value):
-							echo '<tr><td>', $key, '</td><td>', $value, '</td> </tr>', "\n";
-						endforeach;
-
-						echo '</table>';
-					else:
-						echo '<p>', $entry, '</p>';
-					endif;
-
-					echo '</div>';
-				endforeach;
-
-				echo '</div>';
+			echo '<table>', "\n";
+			
+			$header = array_merge(array('attribute'), array_keys($data));
+			
+			echo "<tr>\n";
+			
+			foreach($header as $h):
+				echo '<th>', $h, '</th>', "\n";
 			endforeach;
+			
+			echo "<tr>\n";
+			
+			$body = array();
+			
+			foreach($data as $anchor => $entry):
+				foreach($entry as $key => $value):
+					$body[$key][] = $value;
+				endforeach;
+			endforeach;
+			
+			foreach($body as $key => $entries):
+				echo '<tr><td>', $key, '</td>';
+				
+				foreach($entries as $freq):
+					echo '<td>', $freq, '</td>';
+				endforeach;
+				
+				echo "</tr>\n";
+			endforeach;
+			
+			echo '</table>';
+			
+			echo '</div>';
+		endforeach;
 		?>
 	</div>
 <?php
@@ -129,7 +142,7 @@ endif;
 if(isset($classifiers)):
 	echo '<br /><br /><b>Outros classificadores: </b>';
 	foreach($classifiers as $id):
-		echo $this->Html->link($id, array($this->params['pass'][0], $this->params['pass'][1], $id)), ' ';
+		echo $this->Html->link($id, array('default', $this->params['pass'][1], $id)), ' ';
 	endforeach;
 endif;
 ?>

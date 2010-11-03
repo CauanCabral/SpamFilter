@@ -18,7 +18,11 @@ class ClassifiersController extends AppController {
 	 * 
 	 * @var NaiveBayes
 	 */
-	public $components = array('NaiveBayes');
+	public $components = array(
+		'NaiveBayes' => array(
+			'binaryPath' => '/usr/local/bin/'
+		)
+	);
 	
 	/**
 	 * Ação para classificação de uma mensaagem (POST)
@@ -102,7 +106,7 @@ class ClassifiersController extends AppController {
 			case 'build':
 				$entries = $this->__loadComments($comments);
 
-				$this->Classifier->buildModel('Spam', $entries, $type);
+				$this->Classifier->buildModel('Spam', $entries, $type, false);
 				$this->set('stats', $this->Classifier->modelReport());
 				
 				break;
@@ -123,6 +127,30 @@ class ClassifiersController extends AppController {
 				$this->Session->setFlash('Clique em uma das opções do menu ao lado');
 				break;
 		}
+	}
+	
+	/**
+	 * Gera arquivos Arff e Tab para uso com WEKA  e implementações
+	 * do Borgelt do NaiveBayes
+	 * 
+	 * @return void
+	 */
+	public function export()
+	{
+		$this->loadModel('Comment');
+		
+		$comments = $this->Comment->find('all');
+		$entries = array();
+		
+		foreach($comments as $comment)
+		{
+			$entries[] = array(
+				'class' => $comment['Comment']['spam'] ? 'spam' : 'not_spam',
+				'content' => $comment['Comment']['content']
+			);
+		}
+		
+		$this->NaiveBayes->modelGenerate($entries);
 	}
 
 	private function __loadComments($param = 'all')

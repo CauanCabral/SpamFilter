@@ -14,4 +14,5 @@ echo $this->Html->scriptEnd();
 	<li><?php echo $this->Html->link(__('Estatísticas do classificador (NaiveBayes)', true), array('controller' => 'classifiers', 'action' => 'tests', 'naive_bayes', 'info', 2)); ?></li>
 	<li><?php echo $this->Html->link(__('Adicionar comentário', true), array('controller' => 'comments', 'action' => 'add')); ?></li>
 	<li><?php echo $this->Html->link(__('Estatísticas dos comentários', true), array('controller' => 'comments', 'action' => 'statistics')); ?></li>
+	<li><?php echo $this->Html->link(__('Exportar comentários (Arff e tab)', true), array('controller' => 'classifiers', 'action' => 'export')); ?></li>
 </ul>

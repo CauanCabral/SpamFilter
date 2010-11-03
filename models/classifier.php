@@ -43,7 +43,7 @@ class Classifier extends AppModel
 	 * @param string $type
 	 * @return boolean
 	 */
-	public function buildModel($name, $entries, $type = 'Pa')
+	public function buildModel($name, $entries, $type = 'Pa', $optimize = true)
 	{
 		if($type == 'Pa')
 		{
@@ -97,7 +97,10 @@ class Classifier extends AppModel
 
 		$this->_model->modelGenerate($trainingSet);
 		
-		$this->_model->optimize();
+		if($optimize)
+		{
+			$this->_model->optimize();
+		}
 
 		// guarda modelo de forma persistente (no bd)
 		return $this->save(array('model' => serialize($this->_model)));

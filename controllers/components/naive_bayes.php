@@ -18,9 +18,9 @@ class NaiveBayesComponent extends Object {
 	
 	protected $_settings = array();
 	
-	public function __construct($settings = array())
+	public function __construct()
 	{
-		$default_settings = array(
+		$this->_settings = array(
 			'tokenSeparator' => '/\s|\[|\]|<|>|\?|;|\"|\'|\=|\/|:|\(|\)|!|&/',
 			'binaryPath' => '/usr/bin/',
 			'domain' => 'dom -a %s %s',
@@ -33,13 +33,13 @@ class NaiveBayesComponent extends Object {
 				'classAttributeValues' => array('spam', 'not_spam')
 			)
 		);
-		
-		$this->_settings = array_merge($default_settings, $settings);
 	}
 	
-	public function initialize(&$controller) 
+	public function initialize(&$controller, $settings = array()) 
 	{
 		$this->controller = $controller;
+		
+		$this->_settings = Set::merge($this->_settings, $settings);
 	}
 	
 	/**
