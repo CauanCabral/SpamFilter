@@ -174,7 +174,7 @@ class BaseClassifier
 	public function crossValidation($num_folds = 10, $balanced = true)
 	{
 		// calcula o número de instâncias em cada fold
-		$parts_size = ceil($this->statistics['total']/$num_folds);
+		$parts_size = floor($this->statistics['total']/$num_folds);
 
 		if($balanced)
 		{

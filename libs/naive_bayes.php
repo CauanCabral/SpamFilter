@@ -93,7 +93,7 @@ class NaiveBayes extends BaseClassifier
 		parent::training($trainingSet);
 		
 		// probabilidade de ocorrência de cada classe (a priori)
-		$this->priors = array_fill_keys(array_keys($this->classes), 1);
+		$this->priors = array_fill_keys(array_keys($this->classes), 0);
 		
 		// probabilidade de ocorrência de cada atributo em uma classe
 		$this->likelihoods = array_fill_keys(array_keys($this->classes), array_fill_keys($this->attributes, 0));
