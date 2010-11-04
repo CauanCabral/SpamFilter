@@ -180,7 +180,7 @@ class Classifier extends AppModel
 			}
 		}
 		
-		$classes = $this->_model->classify($toClassify);
+		$classes = $this->_model->classify($toClassify, true);
 
 		foreach($entries as $t => $entry)
 		{

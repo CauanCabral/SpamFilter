@@ -75,7 +75,7 @@ class NaiveBayes extends BaseClassifier
 		{
 			foreach($classes as $t => $entry)
 			{
-				if($entry['p'] == 1)
+				if(abs($entry['p']) <= 1)
 					$classes[$t][$this->classField] = $this->defaultClass;
 			}
 		}
@@ -151,7 +151,7 @@ class NaiveBayes extends BaseClassifier
 			{
 				foreach($p as $className => $prob)
 				{
-					$tmp = $freq * ( $this->likelihoods[$className][$attr] + 1 ) / ($this->priors[$className] + 1);
+					$tmp = ($freq * $this->likelihoods[$className][$attr] + 1) / ($this->priors[$className] + 1);
 					
 					$p[$className] *= $tmp;
 				}
