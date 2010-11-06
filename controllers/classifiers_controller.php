@@ -128,7 +128,7 @@ class ClassifiersController extends AppController {
 		switch($action)
 		{
 			case 'build':
-				$entries = $this->__loadComments($comments);
+				$entries = $this->__loadKnowledges();
 
 				$this->Classifier->buildModel('Spam', $entries, $type, false);
 				$this->set('stats', $this->Classifier->modelReport());
@@ -194,6 +194,14 @@ class ClassifiersController extends AppController {
 		$this->render();
 	}
 
+	/**
+	 * Método auxiliar para carregar base de comentários
+	 * Apenas para testes
+	 * 
+	 * @param $param string|int id de comentário ou a string 'all'
+	 * 
+	 * @return void
+	 */
 	private function __loadComments($param = 'all')
 	{
 		$this->loadModel('Comment');
@@ -212,12 +220,34 @@ class ClassifiersController extends AppController {
 		foreach($comments as $comment)
 		{
 			$entries[] = array(
-				'__id__' => $comment['Comment']['id'],
-				'class' => $comment['Comment']['spam'] ? 'spam' : 'not_spam',
 				'content' => $comment['Comment']['content']
 			);
 		}
 
+		return $entries;
+	}
+	
+	/**
+	 * Método auxiliar para carregar base de conhecimento
+	 * 
+	 * @return void
+	 */
+	private function __loadKnowledges()
+	{
+		$this->loadModel('Knowledge');
+		
+		$knowledges = $this->Knowledge->find('all');
+		
+		$entries = array();
+		
+		foreach($knowledges as $knowledge)
+		{
+			$entries[] = array(
+				'class' => $knowledge['Knowledge']['spam'] ? 'spam' : 'not_spam',
+				'content' => unserialize($knowledge['Knowledge']['content'])
+			);
+		}
+		
 		return $entries;
 	}
 }

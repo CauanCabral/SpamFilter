@@ -72,12 +72,10 @@ class Classifier extends AppModel
 		// identifica os atributos para cada entrada
 		foreach($entries as $t => $entry)
 		{
-			$attributes = $this->__identifyAttributes($entry['content']);
-			
-			$trainingSet['entries'][$t]['attributes'] = $attributes;
+			$trainingSet['entries'][$t]['attributes'] = $entry['content'];
 			$trainingSet['entries'][$t][$this->_model->classField] = $entry['class'];
 
-			foreach($attributes as $attr => $freq)
+			foreach($entry['content'] as $attr => $freq)
 			{
 				// verifica se o atributo já foi identificado em outra instância
 				if(!in_array($attr, $trainingSet['attributes']))
@@ -155,6 +153,7 @@ class Classifier extends AppModel
 		foreach($entries as $t => $entry)
 		{
 			// persiste a entrada
+			/*
 			$this->create();
 			
 			$toSave = array('content' => $entry['content']);
@@ -167,6 +166,7 @@ class Classifier extends AppModel
 			
 			if(!$this->save($toSave))
 				$this->log(__('Falha ao salvar comentário',1));
+			*/
 			
 			// identifica os atributos
 			$attributes = $this->__identifyAttributes($entry['content']);
@@ -221,26 +221,26 @@ class Classifier extends AppModel
 	 * @param string $class
 	 * @param array $options
 	 */
-	public function update($content, $class, $options = array())
+	public function update($entry, $class, $options = array())
 	{
-		$entry = $this->__identifyAttributes($content);
+		$content = $this->__identifyAttributes($entry['content']);
 
-		foreach($entry as $attr => $freq)
+		foreach($content as $attr => $freq)
 		{
 			// verifica se o atributo faz parte dos atributos observados (parte do modelo)
 			if(!isset($this->_model->attributes[$attr]))
 			{
 				// caso não faça, remove-o da lista
-				unset($entry[$attr]);
+				unset($content[$attr]);
 			}
 		}
 
 		// adiciona no vetor de entradas, os atributos inexistentes no exemplo
 		foreach($his->_model->attributes as $attr)
 		{
-			if(!isset($entry[$attr]))
+			if(!isset($content[$attr]))
 			{
-				$entry[$attr] = 0;
+				$content[$attr] = 0;
 			}
 		}
 
@@ -252,8 +252,29 @@ class Classifier extends AppModel
 		{
 			$t = null;
 		}
+		
+		// persiste o comentário na base de conhecimentos
+		$this->__saveKnowledge(
+			array(
+				'content' => $content,
+				'spam' => $class == 'spam' ? 1 : 0,
+				'comment_id'=> $entry['id']
+			)
+		);
 
-		$this->_model->update($entry, $class, $t);
+		// atualiza modelo
+		$this->_model->update($content, $class, $t);
+	}
+	
+	/**
+	 * 
+	 * @param array $data
+	 * 
+	 * @return bool success
+	 */
+	protected function __saveKnowledge($data)
+	{
+		
 	}
 
 	/**

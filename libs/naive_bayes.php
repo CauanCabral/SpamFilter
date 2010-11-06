@@ -13,6 +13,8 @@
  * @license MIT License
  *
  */
+App::import('Model', 'Knowledge');
+
 class NaiveBayes extends BaseClassifier
 {
 	protected $priors;
