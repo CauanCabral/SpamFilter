@@ -49,6 +49,9 @@ class NaiveBayes extends BaseClassifier
 	 * Classifica um conjunto de entradas
 	 *
 	 * @param array $entries
+	 * @param bool $useDefault
+	 * 
+	 * @return array $classes
 	 */
 	public function classify($entries, $useDefault = false)
 	{

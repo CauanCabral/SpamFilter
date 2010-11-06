@@ -65,9 +65,11 @@ class Pa extends BaseClassifier
 	/**
 	 * Método que implementa a atualização do classificador PA
 	 * 
-	 * @param $x Instâcia
-	 * @param $correctClass Classe correta para a instância $x
-	 * @param $t Posição no 'tempo' em que o classificador deve ser atualizado
+	 * @param array $x Instâcia
+	 * @param int $correctClass Classe correta para a instância $x
+	 * @param int $t Posição no 'tempo' em que o classificador deve ser atualizado
+	 * 
+	 * @return array $class
 	 */
 	public function modelUpdate($x, $correctClass = null, $t = null)
 	{
@@ -117,11 +119,6 @@ class Pa extends BaseClassifier
 			$this->w[$t+1][$k] = $this->w[$t][$k] + $aux;
 		}
 
-		/*
-		 * @FIXME teste meu
-		 */
-		//if($l > 0.6) $y = -$y;
-
 		return array($this->classField => $y, 'p' => $l);
 	}
 
@@ -129,16 +126,29 @@ class Pa extends BaseClassifier
 	 * Classifica um conjunto de entradas
 	 *
 	 * @param array $entries
+	 * @param bool $useDefault
+	 * 
+	 * @return array $classes;
 	 */
-	public function classify($entries)
+	public function classify($entries, $useDefault = false)
 	{
 		$classes = array();
 
-		// para cada instância
+		// classifica cada instância
 		foreach($entries as $t => $x)
 		{
 			// atualiza classificador
-			$classes[$t] = $this->modelUpdate($x);
+			$classes[$t] = $this->modelUpdate($x, null, null, $useDefault);
+		}
+		
+		// atribui classe padrão, quando não há certeza
+		if($useDefault)
+		{
+			foreach($classes as $t => $entry)
+			{
+				if(abs($entry['p']) >= 0.8)
+					$classes[$t][$this->classField] = $this->defaultClass;
+			}
 		}
 
 		return $classes;

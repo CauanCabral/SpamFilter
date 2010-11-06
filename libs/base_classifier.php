@@ -153,13 +153,15 @@ class BaseClassifier
 
 	/**
 	 * Classifica um conjunto de entradas e retorna
-	 * um array com as classes aplicadas
+	 * um array com as classes aplicadas.
+	 * Precisa ser implementado em cada classe filha
 	 *
 	 * @param array $entries
+	 * @param bool $useDefault
 	 * 
 	 * @return array $classes
 	 */
-	public function classify($entries)
+	public function classify($entries, $useDefault = false)
 	{
 		return false;
 	}
