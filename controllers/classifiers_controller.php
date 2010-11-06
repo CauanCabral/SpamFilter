@@ -122,6 +122,7 @@ class ClassifiersController extends AppController {
 
 	public function tests($type = 'pa', $action = 'default', $model_id = 1, $comments = 'all')
 	{
+		$this->set('type', $type);
 		$type = Inflector::camelize($type);
 
 		switch($action)
@@ -137,6 +138,7 @@ class ClassifiersController extends AppController {
 				$entries = $this->__loadComments($comments);
 
 				$this->Classifier->loadModel($model_id);
+				
 				$this->set('classifieds', Set::merge($entries, $this->Classifier->classify($entries)));
 				$this->set('ids', $this->Comment->find('list', array('fields' => array('id'))));
 				break;

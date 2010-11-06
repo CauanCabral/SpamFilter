@@ -121,7 +121,7 @@ if(isset($classifieds)):
 			<?php $classify['class'] == 1 ? __('Spam') : __('Não Spam'); ?>
 			&nbsp;
 		</dd>
-		<dt<?php if ($i % 2 == 0) echo $class;?>><?php __('"Certeza"/"Margem de perda"'); ?></dt>
+		<dt<?php if ($i % 2 == 0) echo $class;?>><?php $type == 'pa' ? __('Suffer Loss') : __('Probabilidade'); ?></dt>
 		<dd<?php if ($i++ % 2 == 0) echo $class;?>>
 			<?php echo $classify['p']; ?>
 			&nbsp;
