@@ -114,8 +114,16 @@ endif;
 
 if(isset($classifieds)):
 	foreach($classifieds as $classify):
+		pr($classify);
 ?>
 	<dl><?php $i = 0; $class = ' class="altrow"';?>
+		<?php if(isset($classify['correct'])): ?>
+			<dt<?php if ($i % 2 == 0) echo $class;?>><?php __('Classe Correta'); ?></dt>
+			<dd<?php if ($i++ % 2 == 0) echo $class;?>>
+				<?php $classify['correct'] == 1 ? __('Spam') : __('Não Spam'); ?>
+				&nbsp;
+			</dd>
+		<?php endif; ?>
 		<dt<?php if ($i % 2 == 0) echo $class;?>><?php __('Classificado como'); ?></dt>
 		<dd<?php if ($i++ % 2 == 0) echo $class;?>>
 			<?php $classify['class'] == 1 ? __('Spam') : __('Não Spam'); ?>

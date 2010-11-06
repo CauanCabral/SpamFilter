@@ -30,7 +30,7 @@ class Classifier extends AppModel
 	 * 
 	 * @var $_tokenSeparator string
 	 */
-	protected $_tokenSeparator = '/\s|\[|\]|<|>|\?|;|\"|\'|\=|\/|:|\(|\)|!|&/';
+	protected $_tokenSeparator = '/\s|\[|\]|<|>|\?|;|\"|\'|\=|\/|\(|\)|!|&/';
 
 	/**
 	 * Atributo com referência ao classificador utilziado
@@ -151,9 +151,24 @@ class Classifier extends AppModel
 	{
 		$toClassify = array();
 
-		// identifica os atributos para cada entrada
+		// processa cada entrada
 		foreach($entries as $t => $entry)
 		{
+			// persiste a entrada
+			$this->create();
+			
+			$toSave = array('content' => $entry['content']);
+			
+			if(isset($entry['author']))
+				$toSave['author'] = $entry['author'];
+				
+			if(isset($entry['author_url']))
+				$toSave['author_url'] = $entry['author_url'];
+			
+			if(!$this->save($toSave))
+				$this->log(__('Falha ao salvar comentário',1));
+			
+			// identifica os atributos
 			$attributes = $this->__identifyAttributes($entry['content']);
 			$toClassify[$t] = $attributes;
 
@@ -180,17 +195,18 @@ class Classifier extends AppModel
 			}
 		}
 		
+		// faz a classificação em sí, segundo argumento diz para usar classe padrão quando não for possível dar certeza
 		$classes = $this->_model->classify($toClassify, true);
 
-		foreach($entries as $t => $entry)
+		// em caso de debug, aumenta as informações sobre o que foi classificado
+		if(Configure::read('debug') > 0)
 		{
-			$classes[$t]['class'] = $classes[$t][$this->_model->classField];
-			
-			unset($classes[$t][$this->_model->classField]);
-			
-			if(isset($entry['class']))
+			foreach($entries as $t => $entry)
 			{
-				$classes[$t]['correct'] = ($entry['class'] == 'spam') ? 1 : -1;
+				if(isset($entry['class']))
+				{
+					$classes[$t]['correct'] = ($entry['class'] == 'spam') ? 1 : -1;
+				}
 			}
 		}
 		
@@ -261,7 +277,7 @@ class Classifier extends AppModel
 				continue;
 
 			// contagem de links
-			if(preg_match('/^www_/', $t))
+			if(preg_match('/^www_/', $t) || preg_match('/^http:/', $t))
 			{
 				$out['links_count']++;
 			}
@@ -306,16 +322,6 @@ class Classifier extends AppModel
 	}
 
 	/**
-	 * 'Printa' o classificador
-	 * 
-	 * @return void
-	 */
-	public function printModel()
-	{
-		$this->_model->printModel(true);
-	}
-
-	/**
 	 * Gera um relatório sobre o classificador e o
 	 * retorna
 	 * 
@@ -340,10 +346,20 @@ class Classifier extends AppModel
 		}
 		else
 		{
-			$report['extra']['probabilities'] = $this->_model->getConfig();
+			$report['extra']['likelihoods'] = $this->_model->getConfig();
 		}
 
 		return $report;
+	}
+	
+	/**
+	 * 'Printa' o classificador
+	 * 
+	 * @return void
+	 */
+	public function printModel()
+	{
+		$this->_model->printModel(true);
 	}
 
 	/**

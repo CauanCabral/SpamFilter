@@ -561,3 +561,8 @@ div.code-coverage-results span.result-good {
     font-size: x-small;
     margin-left: 20px;
 }
+
+#menu li a
+{
+	width: 20em;
+}

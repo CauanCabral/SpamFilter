@@ -71,9 +71,9 @@ class BaseClassifier
 	 * Seu valor deve ser igual a um dos possíveis valores
 	 * do atributo $classes
 	 * 
-	 * @var int
+	 * @var string
 	 */
-	public $defaultClass = -1;
+	public $defaultClass = 'not_spam';
 	
 	/**
 	 * Atributo contendo estatísticas relacionadas
