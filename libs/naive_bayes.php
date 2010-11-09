@@ -46,6 +46,8 @@ class NaiveBayes extends BaseClassifier
 	 * Gera um model para o classificador
 	 *
 	 * @param array $trainingSet
+	 * 
+	 * @return bool success
 	 */
 	public function modelGenerate($trainingSet)
 	{
@@ -113,6 +115,8 @@ class NaiveBayes extends BaseClassifier
 	 * Faz treinamento do modelo
 	 * 
 	 * @param array $trainingSet
+	 * 
+	 * @return void
 	 */
 	protected function training($trainingSet)
 	{
@@ -165,6 +169,8 @@ class NaiveBayes extends BaseClassifier
 	 *
 	 * @param array $attr
 	 * @param string $class
+	 * 
+	 * @return int $probability
 	 */
 	protected function __p($entry)
 	{
@@ -187,11 +193,21 @@ class NaiveBayes extends BaseClassifier
 		return $p;
 	}
 
+	/**
+	 * 
+	 * @return array $likelihoods
+	 */
 	public function getConfig()
 	{
 		return $this->likelihoods;
 	}
 	
+	/**
+	 * 
+	 * @param int $historyLength
+	 * 
+	 * @return void
+	 */
 	public function optimize($historyLength = 10)
 	{
 		unset($this->entries);

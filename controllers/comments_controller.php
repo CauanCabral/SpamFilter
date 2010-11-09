@@ -1,5 +1,6 @@
 <?php
-class CommentsController extends AppController {
+class CommentsController extends AppController
+{
 
 	public $name = 'Comments';
 	
