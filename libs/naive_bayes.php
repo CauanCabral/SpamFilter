@@ -17,8 +17,29 @@ App::import('Model', 'Knowledge');
 
 class NaiveBayes extends BaseClassifier
 {
+	/**
+	 * Configuração que determina o método
+	 * de inferência do classificador
+	 * 
+	 * Se true: classificador utilizará valores discretos diretamente
+	 * Se false: classificador utilizará médias e variância
+	 * 
+	 * @var $discretization bool
+	 */
+	public $discretization = false;
+	
+	/**
+	 * Probabilidade 'à priori'
+	 * 
+	 * @var $priors array
+	 */
 	protected $priors;
 	
+	/**
+	 * Probabilidade 'likelihoods'
+	 * 
+	 * @var $likelihoods array
+	 */
 	protected $likelihoods;
 
 	/**
@@ -162,6 +183,7 @@ class NaiveBayes extends BaseClassifier
 				}
 			}
 		}
+		
 		return $p;
 	}
 

@@ -3,9 +3,16 @@ App::import('Sanitize');
 
 /**
  * Classe/serviço RESTful para classificação de mensagens
- * utilizando algoritimo Naive Bayes.
+ * utilizando algoritimos de aprendizado de máquina, tais
+ * como o Naive Bayes.
+ * 
+ * Projeto desenvolvido para o trabalho final de graduação em Bacharelado
+ * em Ciência da Computação, acadêmico Cauan Cabral.
  * 
  * @author Cauan Cabral
+ * @link http://cauancabral.net
+ * @copyright Cauan Cabral @ 2010
+ * @license MIT License
  *
  */
 class ClassifiersController extends AppController {
@@ -23,6 +30,12 @@ class ClassifiersController extends AppController {
 			'binaryPath' => '/usr/local/bin/'
 		)
 	);
+	
+	/**
+	 * 
+	 * @var array HelperCollection
+	 */
+	public $helpers = array('Number');
 	
 	/**
 	 * Ação para classificação de uma mensaagem (POST)
@@ -120,7 +133,14 @@ class ClassifiersController extends AppController {
 		$this->render('default');
 	}
 
-	public function tests($type = 'pa', $action = 'default', $model_id = 1, $comments = 'all')
+	/**
+	 * 
+	 * @param string $type
+	 * @param string $action
+	 * @param int $model_id
+	 * @param all $comments
+	 */
+	public function tests($action = 'default', $type = 'pa', $model_id = 1, $comments = 'all')
 	{
 		$this->set('type', $type);
 		$type = Inflector::camelize($type);
@@ -131,9 +151,9 @@ class ClassifiersController extends AppController {
 				$entries = $this->__loadKnowledges();
 
 				$this->Classifier->buildModel('Spam', $entries, $type, false);
-				$this->set('stats', $this->Classifier->modelReport());
-				
+				$this->set('info', $this->Classifier->modelReport());
 				break;
+				
 			case 'classify':
 				$entries = $this->__loadComments($comments);
 
@@ -142,11 +162,19 @@ class ClassifiersController extends AppController {
 				$this->set('classifieds', Set::merge($entries, $this->Classifier->classify($entries)));
 				$this->set('ids', $this->Comment->find('list', array('fields' => array('id'))));
 				break;
+				
 			case 'info':
 				$this->Classifier->loadModel($model_id);
 
-				$this->set('stats', $this->Classifier->modelReport());
+				$this->set('info', $this->Classifier->modelReport());
 				$this->set('classifiers', $this->Classifier->find('list', array('fields' => array('id'))));
+				break;
+				
+			case 'stats':
+				$this->loadModel('Knowledge');
+				
+				$this->set('stats', $this->Knowledge->getStats());
+				
 				break;
 			default:
 				$this->Session->setFlash('Clique em uma das opções do menu ao lado');
@@ -164,16 +192,16 @@ class ClassifiersController extends AppController {
 	{
 		$this->autoRender = false;
 		
-		$this->loadModel('Comment');
+		$this->loadModel('Knowledge');
 		
-		$comments = $this->Comment->find('all');
+		$knowledges = $this->Knowledge->find('all');
 		$entries = array();
 		
-		foreach($comments as $comment)
+		foreach($knowledges as $knowledge)
 		{
 			$entries[] = array(
-				'class' => $comment['Comment']['spam'] ? 'spam' : 'not_spam',
-				'content' => $comment['Comment']['content']
+				'class' => $knowledge['Knowledge']['spam'] ? 'spam' : 'not_spam',
+				'content' => unserialize($knowledge['Knowledge']['content'])
 			);
 		}
 		
@@ -192,6 +220,20 @@ class ClassifiersController extends AppController {
 		$this->set($params);
 		
 		$this->render();
+	}
+	
+	/**
+	 * Temp method
+	 */
+	public function import()
+	{
+		$this->autoRender = false;
+		
+		App::import('Lib', 'Import');
+		
+		$i = new Import();
+		
+		$i->run();
 	}
 
 	/**
@@ -220,7 +262,7 @@ class ClassifiersController extends AppController {
 		foreach($comments as $comment)
 		{
 			$entries[] = array(
-				'content' => $comment['Comment']['content']
+				'content' => $comment['Comment']['content'] 
 			);
 		}
 

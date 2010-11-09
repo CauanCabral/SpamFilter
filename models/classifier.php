@@ -152,7 +152,7 @@ class Classifier extends AppModel
 			if(empty($toClassify[$t]))
 				continue;
 			
-			foreach($toClassify[$t]['content'] as $attr => $freq)
+			foreach($toClassify[$t] as $attr => $freq)
 			{
 				// verifica se o atributo faz parte dos atributos observados (parte do modelo)
 				if(!in_array($attr, $this->_model->attributes))
@@ -301,7 +301,7 @@ class Classifier extends AppModel
 		
 		$Knowledge = new Knowledge();
 		
-		$Knowledge->add($entry, $convertOnly);
+		return $Knowledge->add($entry, $convertOnly);
 	}
 }
 ?>
