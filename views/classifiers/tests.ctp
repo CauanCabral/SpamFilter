@@ -19,45 +19,45 @@ $(document).ready(function() {
 <div class="comments">
 	<h2><?php __('Testes');?></h2>
 <?php
-if(isset($stats)):
+if(isset($info)):
 ?>
 	<dl><?php $i = 0; $class = ' class="altrow"';?>
 		<dt<?php if ($i % 2 == 0) echo $class;?>><?php __('Classificador'); ?></dt>
 		<dd<?php if ($i++ % 2 == 0) echo $class;?>>
-			<?php echo $stats['type'] ?>
+			<?php echo $info['type'] ?>
 			&nbsp;
 		</dd>
 		<dt<?php if ($i % 2 == 0) echo $class;?>><?php __('ID do Classificador'); ?></dt>
 		<dd<?php if ($i++ % 2 == 0) echo $class;?>>
-			<?php echo $stats['id'] ?>
+			<?php echo $info['id'] ?>
 			&nbsp;
 		</dd>
 		<dt<?php if ($i % 2 == 0) echo $class;?>><?php __('Instâncias'); ?></dt>
 		<dd<?php if ($i++ % 2 == 0) echo $class;?>>
-			<?php echo $stats['number_of_instances']; ?>
+			<?php echo $info['number_of_instances']; ?>
 			&nbsp;
 		</dd>
 		<dt<?php if ($i % 2 == 0) echo $class;?>><?php __('Número de Atributos'); ?></dt>
 		<dd<?php if ($i++ % 2 == 0) echo $class;?>>
-			<?php echo $stats['number_of_attributes']; ?>
+			<?php echo $info['number_of_attributes']; ?>
 			&nbsp;
 		</dd>
 		<dt<?php if ($i % 2 == 0) echo $class;?>><?php __('Número de Acertos'); ?></dt>
 		<dd<?php if ($i++ % 2 == 0) echo $class;?>>
-			<?php echo $stats['number_of_asserts']; ?>
+			<?php echo $info['number_of_asserts']; ?>
 			&nbsp;
 		</dd>
 		<dt<?php if ($i % 2 == 0) echo $class;?>><?php __('Taxa de Acerto'); ?></dt>
 		<dd<?php if ($i++ % 2 == 0) echo $class;?>>
-			<?php echo $stats['assertion_ratio']; ?>
+			<?php echo $info['assertion_ratio']; ?>
 			&nbsp;
 		</dd>
 		<?php
-		if(isset($stats['devianation'])):
+		if(isset($info['devianation'])):
 		?>
 		<dt<?php if ($i % 2 == 0) echo $class;?>><?php __('Desvio Padrão'); ?></dt>
 		<dd<?php if ($i++ % 2 == 0) echo $class;?>>
-			<?php echo $stats['devianation']; ?>
+			<?php echo $info['devianation']; ?>
 			&nbsp;
 		</dd>
 		<?php
@@ -68,7 +68,7 @@ if(isset($stats)):
 	<a class="collapse button" href="#">Ver detalhes do classificador</a>
 	<div class="collapse">
 		<?php
-		foreach($stats['extra'] as $sec => $data):
+		foreach($info['extra'] as $sec => $data):
 			echo '<br /> >> <a href="#'.$sec.'" class="collapse button">', $sec, '</a>';
 		
 			echo '<div class="collapse">';
@@ -110,11 +110,28 @@ if(isset($stats)):
 		?>
 	</div>
 <?php
-endif;
-
-if(isset($classifieds)):
+elseif(isset($stats)):
+?>
+	<dl><?php $i = 0; $class = ' class="altrow"';?>
+		<dt<?php if ($i % 2 == 0) echo $class;?>><?php __('Número de comentários'); ?></dt>
+		<dd<?php if ($i++ % 2 == 0) echo $class;?>>
+			<?php echo $stats['total']; ?>
+			&nbsp;
+		</dd>
+		<dt<?php if ($i % 2 == 0) echo $class;?>><?php __('Total de SPAM'); ?></dt>
+		<dd<?php if ($i++ % 2 == 0) echo $class;?>>
+			<?php echo $stats['spam']; ?>
+			&nbsp;
+		</dd>
+		<dt<?php if ($i % 2 == 0) echo $class;?>><?php __('Percentual de SPAM'); ?></dt>
+		<dd<?php if ($i++ % 2 == 0) echo $class;?>>
+			<?php echo $this->Number->toPercentage( ($stats['spam'] / $stats['total'])*100 ); ?>
+			&nbsp;
+		</dd>
+	</dl>
+<?php 
+elseif(isset($classifieds)):
 	foreach($classifieds as $classify):
-		pr($classify);
 ?>
 	<dl><?php $i = 0; $class = ' class="altrow"';?>
 		<?php if(isset($classify['correct'])): ?>
@@ -155,7 +172,7 @@ endif;
 if(isset($classifiers)):
 	echo '<br /><br /><b>Outros classificadores: </b>';
 	foreach($classifiers as $id):
-		echo $this->Html->link($id, array('default', $this->params['pass'][1], $id)), ' ';
+		echo $this->Html->link($id, array($this->params['pass'][0], 'default', $id)), ' ';
 	endforeach;
 endif;
 ?>

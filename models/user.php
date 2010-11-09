@@ -5,36 +5,20 @@ class User extends AppModel {
 	var $validate = array(
 		'username' => array(
 			'notempty' => array(
-				'rule' => array('notempty'),
-				//'message' => 'Sua mensagem de validação aqui',
-				//'allowEmpty' => false,
-				//'required' => false,
-				//'last' => false, // Para a validação após esta regra
-				//'on' => 'create', // Limitar a validação para as operações 'create' ou 'update'
+				'rule' => array('notempty')
 			),
 		),
 		'token' => array(
 			'notempty' => array(
-				'rule' => array('notempty'),
-				//'message' => 'Sua mensagem de validação aqui',
-				//'allowEmpty' => false,
-				//'required' => false,
-				//'last' => false, // Para a validação após esta regra
-				//'on' => 'create', // Limitar a validação para as operações 'create' ou 'update'
+				'rule' => array('notempty')
 			),
 		),
 		'email' => array(
 			'email' => array(
-				'rule' => array('email'),
-				//'message' => 'Sua mensagem de validação aqui',
-				//'allowEmpty' => false,
-				//'required' => false,
-				//'last' => false, // Para a validação após esta regra
-				//'on' => 'create', // Limitar a validação para as operações 'create' ou 'update'
+				'rule' => array('email')
 			),
 		),
 	);
-	// As associações abaixo foram criadas com todas as chaves possíveis, então é possível remover as que não são necessárias
 
 	var $hasMany = array(
 		'Log' => array(

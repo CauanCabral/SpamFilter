@@ -9,9 +9,10 @@ $(document).ready(function() {
 	<fieldset>
  		<legend><?php __('Adicionar Comentário'); ?></legend>
 	<?php
-		echo $this->Form->input('name', array('label' => __('Autor', 1)));
-		echo $this->Form->input('content', array('label' => __('Conteúdo', 1)));
-		echo $this->Form->input('spam', array('label' => __('É Spam?', 1)));
+		echo $this->Form->input('Comment.author', array('label' => __('Autor', 1)));
+		echo $this->Form->input('Comment.author_url', array('label' => __('Site do Autor', 1)));
+		echo $this->Form->input('Comment.content', array('label' => __('Conteúdo', 1)));
+		echo $this->Form->input('Knowledge.spam', array('label' => __('É Spam?', 1)));
 	?>
 	</fieldset>
 <?php echo $this->Form->end(__('Salvar', true));?>

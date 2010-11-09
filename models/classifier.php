@@ -26,13 +26,6 @@ class Classifier extends AppModel
 	);
 
 	/**
-	 * ER responsável pela quebra das mensagens em tokens
-	 * 
-	 * @var $_tokenSeparator string
-	 */
-	protected $_tokenSeparator = '/\s|\[|\]|<|>|\?|;|\"|\'|\=|\/|\(|\)|!|&/';
-
-	/**
 	 * Atributo com referência ao classificador utilziado
 	 * no momento
 	 * 
@@ -152,27 +145,14 @@ class Classifier extends AppModel
 		// processa cada entrada
 		foreach($entries as $t => $entry)
 		{
-			// persiste a entrada
-			/*
-			$this->create();
-			
-			$toSave = array('content' => $entry['content']);
-			
-			if(isset($entry['author']))
-				$toSave['author'] = $entry['author'];
-				
-			if(isset($entry['author_url']))
-				$toSave['author_url'] = $entry['author_url'];
-			
-			if(!$this->save($toSave))
-				$this->log(__('Falha ao salvar comentário',1));
-			*/
-			
 			// identifica os atributos
-			$attributes = $this->__identifyAttributes($entry['content']);
-			$toClassify[$t] = $attributes;
-
-			foreach($attributes as $attr => $freq)
+			$toClassify[$t] = $this->__updateKnowledge($entry, true);
+			
+			// caso não haja atributo válido, ignora pos-processamento
+			if(empty($toClassify[$t]))
+				continue;
+			
+			foreach($toClassify[$t]['content'] as $attr => $freq)
 			{
 				// verifica se o atributo faz parte dos atributos observados (parte do modelo)
 				if(!in_array($attr, $this->_model->attributes))
@@ -198,32 +178,35 @@ class Classifier extends AppModel
 		// faz a classificação em sí, segundo argumento diz para usar classe padrão quando não for possível dar certeza
 		$classes = $this->_model->classify($toClassify, true);
 
-		// em caso de debug, aumenta as informações sobre o que foi classificado
-		if(Configure::read('debug') > 0)
+		foreach($entries as $t => $entry)
 		{
-			foreach($entries as $t => $entry)
+			// em caso de debug, aumenta as informações sobre o que foi classificado
+			if(Configure::read('debug') > 0)
 			{
 				if(isset($entry['class']))
 				{
 					$classes[$t]['correct'] = ($entry['class'] == 'spam') ? 1 : -1;
 				}
 			}
+			
+			$classes[$t]['class'] = $classes[$t][$this->_model->classField];
 		}
 		
-		return $classes; 
+		return $classes;
 	}
 
 	/**
 	 * Realiza atualização do classificador baseado em um
 	 * exemplo com classe conhecida
 	 * 
-	 * @param string $content
-	 * @param string $class
+	 * @param array $entry
 	 * @param array $options
 	 */
-	public function update($entry, $class, $options = array())
+	public function update($entry, $options = array())
 	{
-		$content = $this->__identifyAttributes($entry['content']);
+		extract($entry);
+		
+		$content = $this->__updateKnowledge($content);
 
 		foreach($content as $attr => $freq)
 		{
@@ -252,96 +235,11 @@ class Classifier extends AppModel
 		{
 			$t = null;
 		}
-		
-		// persiste o comentário na base de conhecimentos
-		$this->__saveKnowledge(
-			array(
-				'content' => $content,
-				'spam' => $class == 'spam' ? 1 : 0,
-				'comment_id'=> $entry['id']
-			)
-		);
 
 		// atualiza modelo
 		$this->_model->update($content, $class, $t);
 	}
 	
-	/**
-	 * 
-	 * @param array $data
-	 * 
-	 * @return bool success
-	 */
-	protected function __saveKnowledge($data)
-	{
-		
-	}
-
-	/**
-	 * Separa a string de entrada em Tokens
-	 *
-	 * @param string $entry Conteúdo de entrada
-	 *
-	 * @return array $out Array de tokens identificados
-	 */
-	protected function __identifyAttributes($entry)
-	{
-		$tokens = preg_split($this->_tokenSeparator, $entry, null, PREG_SPLIT_NO_EMPTY);
-
-		$out = array('links_count' => 0);
-
-		foreach($tokens as $token)
-		{
-			$t = $this->__unifyString($token);
-
-			if( mb_strlen($t) < 3 )
-				continue;
-
-			// contagem de links
-			if(preg_match('/^www_/', $t) || preg_match('/^http:/', $t))
-			{
-				$out['links_count']++;
-			}
-			
-			if(isset($out[$t]))
-			{
-				$out[$t]++;
-			}
-			else
-			{
-				$out[$t] = 1;
-			}
-		}
-		
-		// remove os tokens com pouca presença
-		foreach($out as $token => $freq)
-		{
-			if($freq < 3)
-			{
-				unset($out[$token]);
-			}
-		}
-
-		return $out;
-	}
-
-	/**
-	 * Transforma a string de entrada em lower-case e substitui caracteres especiais
-	 * (incluindo acentos) em correspondentes ASCII
-	 *
-	 * @param string $s String de entrada
-	 *
-	 * @return string $out String de entrada com caracteres especiais substituidos por
-	 * correspondentes ASCII
-	 */
-	private function __unifyString($s)
-	{
-		$out = mb_strtolower($s, 'UTF-8');
-		$out = Inflector::slug($out);
-
-		return $out;
-	}
-
 	/**
 	 * Gera um relatório sobre o classificador e o
 	 * retorna
@@ -391,6 +289,19 @@ class Classifier extends AppModel
 	public function printStats()
 	{
 		$this->_model->printStats();
+	}
+	
+	/**
+	 * 
+	 * @param array $entry
+	 */
+	protected function __updateKnowledge($entry, $convertOnly = false)
+	{
+		App::import('Model', 'Knowledge');
+		
+		$Knowledge = new Knowledge();
+		
+		$Knowledge->add($entry, $convertOnly);
 	}
 }
 ?>

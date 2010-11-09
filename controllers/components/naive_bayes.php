@@ -317,7 +317,7 @@ class NaiveBayesComponent extends Object {
 		{
 			$lines[] = array(
 				'class' => $entry['class'],
-				'attributes' => $this->_identifyAttributes($entry['content'])
+				'attributes' => $entry['content']
 			);
 		}
 		
@@ -404,7 +404,7 @@ class NaiveBayesComponent extends Object {
 			{
 				$lines[] = array(
 					'class' => $entry['class'],
-					'attributes' => $this->_identifyAttributes($entry['content'])
+					'attributes' => $entry['content']
 				);
 			}
 		}
