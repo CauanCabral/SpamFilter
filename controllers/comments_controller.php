@@ -4,13 +4,6 @@ class CommentsController extends AppController
 
 	public $name = 'Comments';
 	
-	public $components = array(
-		'NaiveBayes' => array(
-			'binaryPath' => '/usr/local/bin/',
-			'output' => array('types' => 'both')
-		)
-	);
-
 	/**
 	 * 
 	 */
@@ -37,25 +30,5 @@ class CommentsController extends AppController
 			
 			$this->Session->setFlash(__('The comment could not be saved. Please, try again.', true));
 		}
-	}
-	
-	/**
-	 * 
-	 * @param int $id
-	 */
-	public function testFilter($id)
-	{
-		$this->autoRender = false;
-		
-		App::import('Core', 'HttpSocket');
-		
-		$comment = $this->Comment->read(null, $id);
-		
-		$socket = new HttpSocket();
-		$url = 'http://spamfilter.dottibook/classifiers/isSpam.json';
-		
-		$response = $socket->post($url, array('data' => json_encode(array('message' => $comment['Comment']['content']))));
-		
-		pr(json_decode($response));
 	}
 }

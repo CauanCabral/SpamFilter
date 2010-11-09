@@ -60,7 +60,7 @@ class BaseClassifier
 	 */
 	public $classes = array(
 		'spam' => 1,
-		'not_spam' => -1
+		'not_spam' => 0
 	);
 	
 	/**

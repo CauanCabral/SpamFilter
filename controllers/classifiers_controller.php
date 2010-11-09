@@ -51,7 +51,7 @@ class ClassifiersController extends AppController {
 	 * @return classe da mensagem ou true em caso de atualização do filtro
 	 * bem sucedidade.
 	 */
-	public function isSpam()
+	public function check()
 	{
 		$response = array();
 		
@@ -66,14 +66,24 @@ class ClassifiersController extends AppController {
 			}
 			else
 			{
-				$entry = json_decode($this->data);
+				$entry = json_decode($this->data, true);
 				
-				if(!isset($entry->message))
+				if(!isset($entry['message']))
 				{
 					trigger_error(__('Parâmetro de classificação está mal-formatado.', 1), E_USER_ERROR);
 				}
 				
-				$response = $this->NaiveBayes->classify(array(array('class' => '?', 'content' => $entry->message)));
+				$entries = array();
+				
+				$entries[] = array(
+					'content' => $entry['message'] 
+				);
+	
+				$this->Classifier->loadModel(2);
+				
+				$tmp = Set::merge($entries, $this->Classifier->classify($entries));
+				
+				$response = array('class' => $tmp[0]['class'], 'p' => $tmp[0]['p']);
 			}
 		}
 		
@@ -224,16 +234,45 @@ class ClassifiersController extends AppController {
 	
 	/**
 	 * Temp method
+	 * 
+	 * @param int $id
 	 */
-	public function import()
+	public function testFilter($id)
 	{
 		$this->autoRender = false;
 		
-		App::import('Lib', 'Import');
+		App::import('Core', 'HttpSocket');
 		
-		$i = new Import();
+		$comment = $this->__loadComments($id);
 		
-		$i->run();
+		$socket = new HttpSocket();
+		$url = Router::url(array('controller' => 'classifiers', 'action' => 'check', 'ext' => 'json'), true);
+		
+		$response = $socket->post($url, array('data' => json_encode(array('message' => $comment[0]['content']))));
+		
+		pr(json_decode($response));
+	}
+	
+	/**
+	 * Temp method
+	 */
+	public function import()
+	{
+		if(Configure::read('debug') > 0)
+		{
+			$this->autoRender = false;
+			
+			App::import('Lib', 'Import');
+			
+			$i = new Import();
+			
+			$i->run();
+		}
+		else
+		{
+			$this->Session->setFlash(__('Ação não autorizada em ambiente de produção', 1));
+			$this->redirect('/');
+		}
 	}
 
 	/**

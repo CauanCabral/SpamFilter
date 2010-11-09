@@ -185,11 +185,13 @@ class Classifier extends AppModel
 			{
 				if(isset($entry['class']))
 				{
-					$classes[$t]['correct'] = ($entry['class'] == 'spam') ? 1 : -1;
+					$classes[$t]['correct'] = ($entry['class'] == 'spam') ? 1 : 0;
 				}
 			}
 			
 			$classes[$t]['class'] = $classes[$t][$this->_model->classField];
+			
+			unset($classes[$t][$this->_model->classField]);
 		}
 		
 		return $classes;
